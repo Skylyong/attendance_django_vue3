@@ -187,4 +187,4 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'dist/static'),
 ]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
