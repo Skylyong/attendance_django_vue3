@@ -87,3 +87,5 @@
 	https://blog.csdn.net/qq_32018951/article/details/89286669
 
 	+ Ant-Design-Vue的tabale组件（expandedRowRender）嵌套应用 https://www.cnblogs.com/livedian/p/14542119.html
+
+    + Vue项目打包到django部署 https://blog.csdn.net/lymmurrain/article/details/109348390
