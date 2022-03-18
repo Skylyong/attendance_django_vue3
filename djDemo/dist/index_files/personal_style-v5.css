@@ -1,0 +1,422 @@
+/*固定底部导航栏*/
+
+/*https://css-tricks.com/couple-takes-sticky-footer/?utm_source=caibaojian.com*/
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+div#gitalk-container span svg {
+    vertical-align: top;
+}
+
+div#article_body p img {
+    max-width: 95%;
+    box-shadow: 0 0 50px grey;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border-radius: 20px;
+}
+
+div#article_body pre {
+    color: white;
+    font-weight: 300;
+    font-style: normal;
+    font-size: medium;
+}
+
+div#article_body span.err {
+    color: white;
+    font-weight: 500;
+    font-style: normal;
+    font-size: medium;
+}
+
+div#article_body code {
+    background-color: #fff4d9;
+    border-radius: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    color: #6d5439;
+}
+
+div#article_body h2 {
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 1.4rem;
+    border-left: 5px solid #ffbc41;
+    padding-left: 16px;
+    padding-bottom: 0;
+}
+
+div#article_body h3 {
+    margin-top: 1em;
+    margin-bottom: 0.4em;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 1.3rem;
+    border-left: 5px solid #53cbff;
+    padding-left: 16px;
+
+}
+
+div#article_body h4 {
+    margin-top: 1em;
+    margin-bottom: 0.4em;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 1.2rem;
+    border-left: 5px solid #ff7cfc;
+    padding-left: 16px;
+
+}
+
+div#article_body blockquote p {
+    color: grey;
+    font-style: italic;
+    background-color: #f5f5f5;
+    padding: 10px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 300;
+    font-size: large;
+}
+
+div#article_body blockquote p strong {
+    color: grey;
+    font-style: italic;
+    background-color: #f5f5f5;
+    padding: 10px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-size: large;
+}
+
+div#article_body p {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: large;
+}
+
+div#article_body ul li {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: large;
+}
+
+div#article_body ul li strong {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: large;
+}
+
+div#article_body p strong {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: large;
+}
+
+.article-title {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 800;
+    font-style: normal;
+    font-size: x-large;
+}
+
+.progress-indicator {
+    z-index: 100;
+}
+
+.font-column {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 300;
+    font-style: normal;
+    margin-bottom: 5px;
+    font-size: medium;
+
+}
+
+.font-subheadline {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 300;
+    font-style: normal;
+}
+
+.font-navitem {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    color: black;
+}
+
+.font-desc {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 300;
+    font-style: normal;
+    font-size: small;
+}
+
+.font-headline {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 900;
+    font-style: normal;
+}
+
+.font-body {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 300;
+    font-style: normal;
+}
+
+.font-body-strong {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: large;
+}
+
+.font-body-medium {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 18px;
+}
+
+.font-paginator {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: large;
+    color: black;
+    padding-left: 6px;
+    padding-right: 6px;
+
+}
+
+.font-title {
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.links {
+    color: black;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-size: large;
+}
+
+.links:hover {
+    color: lightskyblue;
+}
+
+.project-title {
+    color: black;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 700;
+    font-size: x-large;
+
+}
+
+.project-title:hover {
+    text-decoration-line: none;
+    color: lightskyblue;
+}
+
+.project-desc {
+    color: gray;
+    font-family: 'Ubuntu', 'Noto Serif SC', source-han-serif-sc, sans-serif;
+    font-weight: 300;
+    font-size: large;
+}
+
+.sub-link {
+    color: #3b3b3b;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+}
+
+.sub-link:hover {
+    color: lightskyblue;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+}
+
+.card-link {
+    color: black;
+}
+
+.card-link:hover {
+    color: black;
+}
+
+.padding-left-20 {
+    padding-left: 20px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.padding-tb-5 {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.padding-lr-20 {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.text-large {
+    font-size: large;
+}
+
+.text-h-center {
+    text-align: center;
+}
+
+.text-medium {
+    font-size: large;
+}
+
+.margin-bottom-zero {
+    margin-bottom: 0;
+}
+
+.font-size-sm {
+    font-size: 22px;
+}
+
+.font-size-xs {
+    font-size: 12px;
+}
+
+.color-lightgray {
+    color: #a6a6a6;
+}
+
+.color-lightgray:hover {
+    color: lightskyblue;
+}
+
+.color-black {
+    color: black;
+}
+
+.color-black:hover {
+    color: gray;
+}
+
+.headline-icon {
+    max-height: 6rem;
+    max-width: 6rem;
+}
+
+.font-navitem:hover {
+    color: lightskyblue;
+}
+
+.nav-icon {
+    color: dimgray;
+    font-size: large;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.nav-icon:hover {
+    color: lightskyblue;
+}
+
+hr {
+    margin-top: 3px;
+}
+
+.align-vertical-center {
+
+}
+
+.sidebar {
+    will-change: min-height;
+}
+
+.sidebar__inner {
+    transform: translate(0, 0);
+    will-change: position, transform;
+}
+
+.sidebar2 {
+    will-change: min-height;
+}
+
+.sidebar2__inner {
+    transform: translate(0, 0);
+    will-change: position, transform;
+}
+
+#sidebar a {
+    color: #a6a6a6;
+}
+
+#sidebar a:hover {
+    color: lightskyblue;
+}
+
+#sidebar ul {
+    list-style-type: none;
+}
+
+#sidebar div div > ul {
+    padding-left: 0;
+}
+
+#sidebar div div ul ul {
+    padding-left: 1em;
+}
+
+.ml13 {
+    position: absolute;
+    top: -30px;
+}
+
+.ml13 .letter {
+    display: inline-block;
+    line-height: 1em;
+    color: #FF6767;
+}
+
+.no-underline {
+    vertical-align: inherit;
+}
+
+.no-underline:hover {
+    text-decoration: none;
+}
+
+#wrapper {
+    min-height: 100%;
+    /* Equal to height of footer */
+    /* But also accounting for potential margin-bottom of last child */
+    margin-bottom: -120px;
+}
+
+#nav-footer,
+#push {
+    height: 120px;
+}
