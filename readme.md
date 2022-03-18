@@ -98,3 +98,5 @@
 	   + Docker部署Django https://pythondjango.cn/django/advanced/16-docker-deployment/
 		
 	   + Nginx启动无法访问： https://blog.csdn.net/yujing1314/article/details/105225325
+	   
+       + [推荐] 部署Django(也是优秀的Django教程) https://www.liujiangblog.com/course/django/181
