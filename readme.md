@@ -42,13 +42,13 @@
 
  2. 普通用户界面
 
-   <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220318203724.png" alt="image-20220318203724405" style="zoom:50%;" />
+   <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220319052435.png" alt="image-20220319052435590" style="zoom:50%;" />
 
  3. 管理员界面
 
-   <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220318203853.png" alt="image-20220318203853895" style="zoom:50%;" />
+   <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220319052527.png" alt="image-20220319052527149" style="zoom:50%;" />
 
-+ 项目demo（不一定能访问）
++ [项目demo](47.103.127.226)
 + 项目编程学习资料（帮助爬坑）
   
 	+ 项目编写
@@ -64,7 +64,7 @@
 			https://blog.csdn.net/qq_40910147/article/details/122754178
 		
 		+ 前后端通信demo【重要】
-		https://www.cnblogs.com/derek1184405959/p/8733578.html
+		  https://www.cnblogs.com/derek1184405959/p/8733578.html
 		  
 		+ 知乎前后端通信教程
 		https://zhuanlan.zhihu.com/p/128976272
@@ -91,12 +91,14 @@
 	
 		+ Ant-Design-Vue的tabale组件（expandedRowRender）嵌套应用 https://www.cnblogs.com/livedian/p/14542119.html
 	
-		+ Vue项目打包到django部署 https://blog.csdn.net/lymmurrain/article/details/109348390
-		
 	+ 项目部署
-	  
+	   + [推荐]Vue项目打包到django部署 https://blog.csdn.net/qq_42517220/article/details/105725506
+     + Vue项目打包到django部署 https://blog.csdn.net/lymmurrain/article/details/109348390
+	   
 	   + Docker部署Django https://pythondjango.cn/django/advanced/16-docker-deployment/
 		
 	   + Nginx启动无法访问： https://blog.csdn.net/yujing1314/article/details/105225325
 	   
-       + [推荐] 部署Django(也是优秀的Django教程) https://www.liujiangblog.com/course/django/181
+      + [从阿里云服务器购买到项目部署，可部分参考]Django搭建个人博客：将项目部署到服务器 https://www.dusaiphoto.com/article/71/
+	   
+       + [通俗易懂强烈推荐] 部署Django(也是优秀的Django教程) https://www.liujiangblog.com/course/django/181
