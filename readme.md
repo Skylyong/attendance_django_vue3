@@ -93,7 +93,7 @@
 	
 	+ 项目部署
 	   + [推荐]Vue项目打包到django部署 https://blog.csdn.net/qq_42517220/article/details/105725506
-     + Vue项目打包到django部署 https://blog.csdn.net/lymmurrain/article/details/109348390
+       + Vue项目打包到django部署 https://blog.csdn.net/lymmurrain/article/details/109348390
 	   
 	   + Docker部署Django https://pythondjango.cn/django/advanced/16-docker-deployment/
 		
