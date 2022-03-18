@@ -31,11 +31,12 @@
 
 > cd djDemo/attendance/managerDatadb.py
 
-+ 运行后界面
+
+界面
 
   
 
-  1. 登录界面
+ 1. 登录界面
 
 <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220318203925.png" alt="image-20220318203925559" style="zoom:25%;" />
 
