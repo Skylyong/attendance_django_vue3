@@ -48,7 +48,7 @@
 
    <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220319052527.png" alt="image-20220319052527149" style="zoom:50%;" />
 
-+ [项目demo](47.103.127.226)
++ [项目demo](http://47.103.127.226)
 + 项目编程学习资料（帮助爬坑）
   
 	+ 项目编写
@@ -99,6 +99,6 @@
 		
 	   + Nginx启动无法访问： https://blog.csdn.net/yujing1314/article/details/105225325
 	   
-      + [从阿里云服务器购买到项目部署，可部分参考]Django搭建个人博客：将项目部署到服务器 https://www.dusaiphoto.com/article/71/
+       + [从阿里云服务器购买到项目部署，可部分参考]Django搭建个人博客：将项目部署到服务器 https://www.dusaiphoto.com/article/71/
 	   
        + [通俗易懂强烈推荐] 部署Django(也是优秀的Django教程) https://www.liujiangblog.com/course/django/181
