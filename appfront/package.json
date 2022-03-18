@@ -1,0 +1,36 @@
+{
+  "name": "myproj",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "ant-design-vue": "^2.2.8",
+    "axios": "^0.26.0",
+    "core-js": "^3.8.3",
+    "js-cookie": "^3.0.1",
+    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
+    "vant": "^3.4.5",
+    "vue": "^3.2.13",
+    "vue-moment": "^4.1.0",
+    "vue-request": "^1.2.4",
+    "vue-router": "^4.0.3",
+    "vuex": "^4.0.0",
+    "vxe-table": "^4.2.2-beta.0",
+    "xe-utils": "^3.5.4"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.6",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "less": "^4.1.2",
+    "less-loader": "^10.2.0",
+    "sass": "^1.32.7",
+    "sass-loader": "^12.0.0"
+  }
+}
