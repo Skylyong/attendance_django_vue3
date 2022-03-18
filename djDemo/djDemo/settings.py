@@ -61,8 +61,7 @@ ROOT_URLCONF = 'djDemo.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),
-                 os.path.join(BASE_DIR,'dist')],
+        'DIRS': [os.path.join(BASE_DIR,'dist')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -183,8 +182,7 @@ CORS_ALLOW_HEADERS = (
 )
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
     os.path.join(BASE_DIR, 'dist/static'),
 ]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'collect_static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
