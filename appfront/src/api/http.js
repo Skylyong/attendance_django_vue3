@@ -13,7 +13,7 @@ if (process.env.NODE_ENV == 'development') {
 } else if (process.env.NODE_ENV == 'debug') {
     axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
 } else if (process.env.NODE_ENV == 'production') {
-    axios.defaults.baseURL = 'http://47.103.127.226/:80/api';
+    axios.defaults.baseURL = 'http://47.103.127.226:80/api';
 }
 
 // 请求超时时间
@@ -81,7 +81,7 @@ axios.interceptors.response.use(
                 // 跳转登录页面                
                 case 403:
                     Toast({
-                        message: '登录过期，请重新登录',
+                        // message: '登录过期，请重新登录',
                         duration: 1000,
                         forbidClick: true
                     });
@@ -101,7 +101,7 @@ axios.interceptors.response.use(
                 // 404请求不存在                
                 case 404:
                     Toast({
-                        message: '网络请求不存在',
+                        // message: '网络请求不存在',
                         duration: 1500,
                         forbidClick: true
                     });
@@ -109,7 +109,7 @@ axios.interceptors.response.use(
                 // 其他错误，直接抛出错误提示                
                 default:
                     Toast({
-                        message: error.response.data.message,
+                        // message: error.response.data.message,
                         duration: 1500,
                         forbidClick: true
                     });

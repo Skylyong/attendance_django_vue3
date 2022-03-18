@@ -70,7 +70,7 @@ for item in [[73, '00073'], [2440, '02440'], [2587, '02587']]:
     c.execute(cmd)
 conn.commit()
 
-for item in [(73, '沈利伟'), (2440, '袁擎'), (2587, '曹亮')]:
+for item in [(73, '张三'), (2440, '李四'), (2587, '王五二')]:
     cmd = "INSERT INTO WorkerMessage (userId, NAME, manager ) VALUES ({}, \'{}\', 1)".format(
         item[0], item[1])
     c.execute(cmd)
