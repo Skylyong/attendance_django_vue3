@@ -122,6 +122,7 @@ export default defineComponent({
     };
 
     const onRangeOk = (value) => {
+      
       var hour = moment(myData[1]).diff(moment(myData[0]), "hour");
       var day = moment(myData[1]).diff(moment(myData[0]), "day");
       hour = hour - day * 24;

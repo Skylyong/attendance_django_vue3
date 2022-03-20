@@ -31,6 +31,23 @@
 
 > cd djDemo/attendance/managerDatadb.py
 
+本地前端页面更新到服务器（将本地写好的前端页面更新到服务器方便需求方查看）
+
+> cd appfront
+> 
+> npm run build # 打包前端文件dist
+> 
+> scp -r dist username@server_ip:file_path/djDemo/  #用打包好的dist文件替换服务器上的dist文件
+> 
+> cd djDemo #切换到服务器上的djDemo目录
+> 
+> sudo killall -9 uwsgi
+> 
+> python3 manage.py collectstatic
+> 
+> python3 manage.py migrate
+> 
+> sudo uwsgi uwsgi.ini # 重启uwsgi服务，页面更新完毕
 
 界面
 
