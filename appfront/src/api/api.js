@@ -4,16 +4,30 @@ export const postSubmit = (username, password) => {
      return post('/login/', { 'name': username, 'author': password })
 }
 
-export const workerApply = (userid, applyType, holidayType, applyTimeLen, applyReason, myDateString) => {
+// export const workerApply = (userid, applyType, holidayType, applyTimeLen, applyReason, myDateString) => {
+//      return post('/submitApplication/', {
+//           'userid': userid,
+//           'applyType': applyType,
+//           'holidayType': holidayType,
+//           'applyTimeLast': applyTimeLen,
+//           'applyReason': applyReason,
+//           'myDateString': myDateString
+//      })
+// }
+
+
+export const workerApply = (userId, data, dataString) => {
      return post('/submitApplication/', {
-          'userid': userid,
-          'applyType': applyType,
-          'holidayType': holidayType,
-          'applyTimeLast': applyTimeLen,
-          'applyReason': applyReason,
-          'myDateString': myDateString
+          'userid':userId,
+          'applyType':data['applyType'], 
+          'applyTimeLast':data['applyTimeLast'],
+          'applyReason':data['applyReason'],  
+          'isHoliday': data['isHoliday'],
+          'conversionType': data['conversionType'],
+          'applyDate': dataString,
      })
 }
+
 
 export const getworkerApplyHistory = (userid, data_type = 0) => {
      return post('/getApplicationHistory/', {
@@ -29,7 +43,7 @@ export const getworkerMessage = (userid) => {
 }
 
 export const delApplication = (userid, key) => {
-     return post('/delApplication/', { 'userid': userid, 'applyTime': key })
+     return post('/delApplication/', { 'userid': userid, 'id': key })
 }
 export const submitApplication = (getid, key, approveState, approveNote) => {
      return post('/approvalApplication/', {
@@ -51,3 +65,11 @@ export const getUserPoolData = (getid) => {
      return post('/getUserPoolData/', { 'userId': getid })
 }
 
+export const getOverTimeData = (getid) => {
+     return post('/getOverTimeData/', { 'userId': getid })   
+}
+
+
+export const getOverTimeUserData = (getid) => {
+     return post('/getOverTimeUserData/', { 'userId': getid })   
+}

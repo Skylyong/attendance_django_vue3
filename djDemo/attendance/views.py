@@ -12,27 +12,39 @@ from django.db import connection
 import time
 
 
+
+
+
+
 history_dic_key_list = ['id', 'userId', 'applyTime', 'applyStartTime', 'applyEndTime', 'applyType',
-                        'holidayType', 'approveState', 'applyReason', 'applyTimeLast', 'name', 'approveNote']
-pool_dic_key_list = ['userId', 'generalHolidayTotal', 'generalHolidayRemainderDays', 'generalHolidayRemainderTime',
-                     'accumulateHolidayRemainderDays', 'accumulateHolidayRemainderTime', 'accumulateHolidayUsedDays',
-                     'accumulateHolidayUsedTime', 'barterAccumulateHolidayDays', 'barterAccumulateHolidayTime',
-                     'restPoolTotalDays', 'restPoolTotalTime', 'name']
-applyTypeD = {
-    0: '公休',
-    1: '值班加班'
+                        'conversionType', 'approveState', 'applyReason', 'applyTimeLast', 'name', 'approveNote', 'isHoliday']
+
+pool_dic_key_list = ['userId', 'HolidayTotal', 'HolidayRemainderDay', 'HolidayRemainderTime',
+                     'costDay', 'costTime', 'restPoolTotalDay',
+                     'restPoolTotalTime',  'name']
+over_time_dic_key_list = ['id', 'userId', 'endYearMonth','ODay','OTime','name']
+isHolidayD = {
+    0: '否',
+    1: '是',
+    2: '-'
 }
-holidayTypeD = {
-    0: '公休请假',
-    1: '加班换积休',
-    2: "值班换积休"
+conversionTypeD = {
+    0: '累加积休',
+    1: '加班费',
+    2: '-'
+    # 2: "值班换积休"
 }
 approveStateD = {
     3: '未审批',
     2: '通过',
-    1: '未通过'
+    1: '驳回'
 }
 
+applyTypeD ={
+    0: '值班',
+    1: '加班',
+    2: '请假'
+}
 
 def get_multi_recored_with_cmd(cmd):
     try:
@@ -58,21 +70,17 @@ def get_signal_recored_with_cmd(cmd):
 def get_user_type(user_id):
     cmd = '''SELECT accountType 
              from loginmessage 
-             where userId=''' + user_id
+             where userId=''' +'\'' + user_id + '\''
     return get_signal_recored_with_cmd(cmd)
 
 
 def get_worker_pool(all, user_id=''):
-    cmd = '''SELECT r.userId, r.generalHolidayTotal,
-                     r.generalHolidayRemainderDays,
-                     r.generalHolidayRemainderTime,
-                     r.accumulateHolidayRemainderDays,
-                     r.accumulateHolidayRemainderTime,
-                     r.accumulateHolidayUsedDays,
-                     r.accumulateHolidayUsedTime,
-                     r.barterAccumulateHolidayDays,
-                     r.barterAccumulateHolidayTime,
-                     r.restPoolTotalDays,
+    cmd = '''SELECT r.userId, r.HolidayTotal,
+                     r.HolidayRemainderDay,
+                     r.HolidayRemainderTime,
+                     r.costDay,
+                     r.costTime,
+                     r.restPoolTotalDay,
                      r.restPoolTotalTime,
                      w.name 
               FROM   RestPoolTab r
@@ -80,20 +88,20 @@ def get_worker_pool(all, user_id=''):
               ON     w.userid=r.userid
               '''
     if not all:
-        cmd += "where r.userid={}".format(user_id)
+        cmd += "where r.userid=\'{}\'".format(user_id)
     return get_multi_recored_with_cmd(cmd)
 
 
 def get_worker_history_from_database(all, user_id=''):
     cmd = '''SELECT a.id , a.userId, a.applyTime, 
                     a.applyStartTime, a.applyEndTime, a.applyType,
-                    a.holidayType,a.approveState, a.applyReason, 
-                    a.applyTimeLast, w.name,a.approveNote 
+                    a.conversionType,a.approveState, a.applyReason, 
+                    a.applyTimeLast, w.name,a.approveNote, a.isHoliday 
              FROM   ApplyHistory a 
              JOIN   WorkerMessage w 
              ON     w.userid=a.userid'''
     if not all:
-        cmd += " WHERE  a.userid={}".format(user_id)
+        cmd += " WHERE  a.userid=\'{}\'".format(user_id)
 
     return get_multi_recored_with_cmd(cmd)
 
@@ -109,16 +117,16 @@ def database2dic(database_result, dic_key_list):
 
 
 def simplify_dic(pool):
-    pool['generalHolidayRemainder'] = "{}天{}时".format(
-        pool['generalHolidayRemainderDays'], pool['generalHolidayRemainderTime'])
-    pool['accumulateHolidayRemainder'] = "{}天{}时".format(
-        pool['accumulateHolidayRemainderDays'], pool['accumulateHolidayRemainderTime'])
-    pool['accumulateHolidayUsed'] = "{}天{}时".format(
-        pool['accumulateHolidayUsedDays'],  pool['accumulateHolidayUsedTime'])
-    pool['barterAccumulateHoliday'] = "{}天{}时".format(
-        pool['barterAccumulateHolidayDays'], pool['barterAccumulateHolidayTime'])
+    pool['HolidayRemainder'] = "{}天{}时".format(
+        pool['HolidayRemainderDay'], pool['HolidayRemainderTime'])
+    pool['cost'] = "{}天{}时".format(
+        pool['costDay'], pool['costTime'])
     pool['restPoolTotal'] = "{}天{}时".format(
-        pool['restPoolTotalDays'], pool['restPoolTotalTime'])
+        pool['restPoolTotalDay'],  pool['restPoolTotalTime'])
+    # pool['barterAccumulateHoliday'] = "{}天{}时".format(
+    #     pool['barterAccumulateHolidayDays'], pool['barterAccumulateHolidayTime'])
+    # pool['restPoolTotal'] = "{}天{}时".format(
+    #     pool['restPoolTotalDays'], pool['restPoolTotalTime'])
     return pool
 
 
@@ -132,8 +140,9 @@ def combine_history_and_pools(worker_apply_history, worker_pools):
         pool_new['groupItem'] = []
         for history in worker_apply_history_dic:
             if pool_new['userId'] == history['userId'] and history['approveState'] != 3:
-                history['applyType'] = applyTypeD[history['applyType']]
-                history['holidayType'] = holidayTypeD[history['holidayType']]
+                # history['applyType'] = applyTypeD[history['applyType']]
+                history['conversionType'] = conversionTypeD[history['conversionType']]
+                history['isHoliday'] = isHolidayD[history['isHoliday']]
                 history['approveState'] = approveStateD[history['approveState']]
 
                 pool_new['groupItem'].append(history)
@@ -165,7 +174,7 @@ def login(request):
         # 有用户名密码错误返回1
         # 验证成功返回0
         param = request.POST
-        name = param['name']
+        name = param['name'].strip()
         key = param['author']
         with connection.cursor() as cursor:
             cursor.execute(
@@ -182,6 +191,125 @@ def login(request):
                     response = set_response(2001, 'key error')
         return JsonResponse(response)
 
+def string2day_hour(applyTimeLast):
+    if '天' in applyTimeLast and '时' in applyTimeLast:
+        day, other = applyTimeLast.split('天')
+        hour = other.split('时')[0]
+        day = int(day)
+        hour = int(hour)
+    elif '时' in applyTimeLast and '天' not in applyTimeLast:
+        day = 0
+        hour = applyTimeLast.split('时')[0]
+        hour = int(hour)
+    else:
+        hour = 0
+        day = applyTimeLast.split('天')[0]
+        day = int(day)
+    return  day, hour
+
+def add2Pool(userId, applyTimeLast):
+    day, hour = string2day_hour(applyTimeLast)
+    if hour > 8: hour=8
+    result = get_dic_result_with_database(database_name='RestPoolTab', columns=['HolidayRemainderDay', \
+                                                               'HolidayRemainderTime', 'restPoolTotalDay', 'restPoolTotalTime'],
+                                          condition={'userId': userId})
+    result = result[0]
+    HolidayRemainderTime = result['HolidayRemainderTime'] + hour
+    t_day = HolidayRemainderTime // 8
+    HolidayRemainderTime = HolidayRemainderTime % 8
+    HolidayRemainderDay = result['HolidayRemainderDay'] + day + t_day
+
+    restPoolTotalTime = result['restPoolTotalTime'] + hour
+    t_day = restPoolTotalTime //8
+    restPoolTotalTime = restPoolTotalTime % 8
+    restPoolTotalDay = result['restPoolTotalDay'] + t_day + day
+
+    cmd = "update RestPoolTab set HolidayRemainderDay={}\
+                                    , HolidayRemainderTime={} \
+                                    ,  restPoolTotalTime={} \
+                                    , restPoolTotalDay={} \
+                                    where userId=\'{}\'".format(HolidayRemainderDay, HolidayRemainderTime, \
+                                                            restPoolTotalTime, restPoolTotalDay, userId)
+    with connection.cursor() as cursor:
+        cursor.execute(cmd)
+
+def minus2Pool(userId, applyTimeLast):
+    day, hour = string2day_hour(applyTimeLast)
+    result = get_dic_result_with_database(database_name='RestPoolTab', columns=['costDay', \
+                                        'costTime', 'restPoolTotalDay', 'restPoolTotalTime'], condition={'userId': userId})
+    result = result[0]
+    costTime = result['costTime'] + hour
+    t_day = costTime // 8
+    costTime = costTime%8
+    costDay = result['costDay'] + day + t_day
+    restPoolTotalTime = result['restPoolTotalTime'] - hour
+    t_day = 0
+    if restPoolTotalTime < 0:
+        restPoolTotalTime = restPoolTotalTime+8
+        t_day = 1
+    restPoolTotalDay = result['restPoolTotalDay'] - t_day - day
+
+    cmd = "update RestPoolTab set costDay={}\
+                                    , costTime={} \
+                                    ,  restPoolTotalTime={} \
+                                    , restPoolTotalDay={} \
+                                    where userId=\'{}\'".format(costDay,costTime,\
+                                                            restPoolTotalTime, restPoolTotalDay, userId)
+    with connection.cursor() as cursor:
+        cursor.execute(cmd)
+
+
+
+def get_dic_result_with_database(cmd =None, database_name='', columns='', condition=''):
+    '''
+    根据查询 返回满足条件的字典列表
+    '''
+    if cmd is None:
+        cmd = ['select']
+        cmd.append(','.join(columns))
+        cmd.append('from')
+        cmd.append(database_name)
+        cmd.append('where')
+        condition_list = []
+        for key, value in condition.items():
+            if key.lower() == 'userid':
+                condition_list.append(key + '=\'' + value + '\'')
+            else:
+                condition_list.append(key + '=' + value)
+        cmd.append(','.join(condition_list))
+        cmd = ' '.join(cmd)
+        print (cmd)
+    result = get_multi_recored_with_cmd(cmd)
+    res = []
+    for re in result:
+        temp = {}
+        for idx, r in enumerate(re):
+            temp[columns[idx]] = r
+        res.append(temp)
+    return res
+
+def add2OverTimeTab(userid, applyEndTime, applyTimeLast):
+    day, hour = string2day_hour(applyTimeLast)
+    yearmonth = applyEndTime.split('-')
+    yearmonth = '-'.join(yearmonth[0:2])
+    cmd = "select ODay, OTime from OverTimeTab where userid=\'{}\' and endYearMonth=\'{}\'".format(userid, yearmonth)
+    result = get_dic_result_with_database(cmd=cmd, columns=['ODay', 'OTime'])
+    if len(result) == 0:
+        cmd = "INSERT INTO OverTimeTab (userid, endYearMonth, ODay, OTime) VALUES (\'{}\', \'{}\',{}, {})".format(
+        userid, yearmonth, day, hour)
+        with connection.cursor() as cursor:
+            cursor.execute(cmd)
+    else:
+        result = result[0]
+        OTime = result['OTime']  + hour
+        t_day = OTime // 8
+        OTime = OTime % 8
+        ODay = result['ODay'] + day + t_day
+        cmd = "update OverTimeTab set ODay={}\
+                                        , OTime={} \
+                                        where userId=\'{}\' and endYearMonth=\'{}\' ".format(ODay,OTime, userid, yearmonth)
+        with connection.cursor() as cursor:
+            cursor.execute(cmd)
 
 def approvalApplication(request):
     '''
@@ -195,18 +323,40 @@ def approvalApplication(request):
     id = param['id']
     approveState = param['approveState']
     approveNote = param['approveNote']
-    try:
-        with connection.cursor() as cursor:
-            cmd = 'update ApplyHistory set approveState=' + approveState + \
-                ', approveNote=\"' + approveNote + "\" where id="+id
-            res = cursor.execute(cmd)
-            if res.rowcount > 0:
-                response = set_response(1, 'success')
+    result = get_dic_result_with_database(database_name='ApplyHistory', columns = ['applyType', \
+                                        'isHoliday', 'conversionType', 'applyTimeLast', 'userId','applyEndTime'], condition={'id': id})
+    result =result[0]
+    applyType = result['applyType']
+    isHoliday = result['isHoliday']
+    conversionType = result['conversionType']
+    applyTimeLast = result['applyTimeLast']
+    worker_id = result['userId']
+    applyEndTime = result['applyEndTime']
+    # try:
+    if int(approveState) == 2:
+        if applyType == '值班' :
+            if isHoliday == 0:
+                add2Pool(worker_id, applyTimeLast)
             else:
-                response = set_response(0, 'filed')
-    except:
-        response = set_response(0, 'filed')
+                add2OverTimeTab(worker_id, applyEndTime, applyTimeLast)
+        elif applyType == '加班':
+            if 0 == conversionType:
+                add2Pool(worker_id, applyTimeLast)
+            else:
+                add2OverTimeTab(worker_id, applyEndTime, applyTimeLast)
+        else:
+            minus2Pool(worker_id, applyTimeLast)
 
+    with connection.cursor() as cursor:
+        cmd = 'update ApplyHistory set approveState=' + approveState + \
+            ', approveNote=\"' + approveNote + "\" where id="+id
+        res = cursor.execute(cmd)
+        if res.rowcount > 0:
+            response = set_response(1, 'success')
+        else:
+            response = set_response(0, 'filed')
+    # except:
+    #     response = set_response(0, 'filed')
     return JsonResponse(response)
 
 
@@ -237,24 +387,29 @@ def submitApplication(request):
     param = request.POST
     userId = param['userid']
     applyType = param['applyType']
-    holidayType = param['holidayType']
-    # applyTime = param['applyTime']
-    applyReason = param['applyReason']
-    applyStartTime, applyEndTime = param['myDateString[0]'], param['myDateString[1]']
     applyTimeLast = param['applyTimeLast']
+    applyReason = param['applyReason']
+    isHoliday = param['isHoliday']
+    conversionType = param['conversionType']
+    if applyType == '值班':
+        applyStartTime, applyEndTime = param['applyDate'], param['applyDate']
+    else:
+        applyStartTime, applyEndTime = param['applyDate[0]'], param['applyDate[1]']
     approveState = 3
     applyTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
     try:
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO ApplyHistory (userId, applyTime, applyStartTime,applyEndTime,applyType, holidayType,approveState, applyReason, applyTimeLast) \
-               VALUES ( %s,%s, %s,%s,%s, %s,%s, %s, %s)", [userId, applyTime, applyStartTime, applyEndTime, applyType, holidayType, approveState, applyReason, applyTimeLast])
-        code = 1
-        message = 'success'
+            cursor.execute("INSERT INTO ApplyHistory  \
+                           (userId, applyTime, applyStartTime,conversionType, \
+                           applyEndTime,applyType, isHoliday,\
+                           approveState, applyReason, applyTimeLast) \
+                            VALUES ( %s,%s, %s,%s,%s, %s,%s, %s, %s, %s)", \
+                           [userId, applyTime, applyStartTime,conversionType, \
+                           applyEndTime,applyType, isHoliday,\
+                           approveState, applyReason, applyTimeLast])
+            response = set_response(1, 'success')
     except:
-        code = 0
-        message = 'failed'
-    response = set_response(code, message)
+        response = set_response(0, 'failed')
     return JsonResponse(response)
 
 
@@ -266,11 +421,11 @@ def delApplication(request):
     '''
     param = request.POST
     userId = param['userid']
-    applyTime = param['applyTime']
+    id = param['id']
     try:
         with connection.cursor() as cursor:
-            cmd = "DELETE FROM ApplyHistory WHERE userId=" + userId + \
-                " AND applyTime=\""+applyTime+"\" AND approveState=3"
+            cmd = "DELETE FROM ApplyHistory WHERE userId=\'" + userId + '\''+ \
+                " AND id="+id+" AND approveState=3"
             res = cursor.execute(cmd)
             if res.rowcount > 0:
                 response = set_response(1, 'success')
@@ -302,8 +457,8 @@ def getApplicationHistory(request):
             results_ = []
             for r in results:
                 if r['approveState'] == 3:
-                    r['applyType'] = applyTypeD[r['applyType']]
-                    r['holidayType'] = holidayTypeD[r['holidayType']]
+                    r['conversionType'] = conversionTypeD[r['conversionType']]
+                    r['isHoliday'] = isHolidayD[r['isHoliday']]
                     r['approveState'] = approveStateD[r['approveState']]
                     results_.append(r)
 
@@ -313,8 +468,9 @@ def getApplicationHistory(request):
         results = database2dic(results, history_dic_key_list)
         results_ = []
         for r in results:
-            r['applyType'] = applyTypeD[r['applyType']]
-            r['holidayType'] = holidayTypeD[r['holidayType']]
+            # r['applyType'] = applyTypeD[r['applyType']]
+            r['conversionType'] = conversionTypeD[r['conversionType']]
+            r['isHoliday'] = isHolidayD[r['isHoliday']]
             r['approveState'] = approveStateD[r['approveState']]
             results_.append(r)
         results = results_
@@ -333,17 +489,17 @@ def getPoolData(request):
     # 返回用户休息池数据和用户历史数据
 
     param = request.POST
-    try:
-        if get_user_type(param['userId']) == 2:
-            worker_apply_history = get_worker_history_from_database(all=True)
-            worker_pools = get_worker_pool(all=True)
-            data = combine_history_and_pools(
-                worker_apply_history, worker_pools)
-            response = set_response(1, 'success', data)
-        else:
-            response = set_response(0, 'filed')
-    except:
+    # try:
+    if get_user_type(param['userId']) == 2:
+        worker_apply_history = get_worker_history_from_database(all=True)
+        worker_pools = get_worker_pool(all=True)
+        data = combine_history_and_pools(
+            worker_apply_history, worker_pools)
+        response = set_response(1, 'success', data)
+    else:
         response = set_response(0, 'filed')
+    # except:
+    #     response = set_response(0, 'filed')
     return JsonResponse(response)
 
 
@@ -397,3 +553,76 @@ def getUserPoolData(request):
         else:
             response = set_response(1, 'success', data=results_)
         return JsonResponse(response)
+
+def get_over_time(all, user_id=''):
+    cmd = '''SELECT a.id , a.userId, a.applyTime, 
+                    a.applyStartTime, a.applyEndTime, a.applyType,
+                    a.conversionType,a.approveState, a.applyReason, 
+                    a.applyTimeLast, w.name,a.approveNote, a.isHoliday 
+             FROM   ApplyHistory a 
+             JOIN   WorkerMessage w 
+             ON     w.userid=a.userid 
+             WHERE  a.approveState = 2 and (a.isHoliday = 1 or a.conversionType = 1)'''
+    if not all:
+        cmd += "  a.userid=\'{}\'".format(user_id)
+
+    return get_multi_recored_with_cmd(cmd)
+
+def get_total_over_time(all, user_id=''):
+    cmd = '''SELECT a.id , a.userId, a.endYearMonth, 
+                    a.ODay, a.OTime,  w.name
+             FROM   OverTimeTab a 
+             JOIN   WorkerMessage w 
+             ON     w.userid=a.userid '''
+    if not all:
+        cmd += " where a.userid=\'{}\'".format(user_id)
+
+    return get_multi_recored_with_cmd(cmd)
+
+def combine_history_and_over_time(over_time_detials, over_time_total):
+    over_time_detials_dic = database2dic(over_time_detials, history_dic_key_list)
+    over_time_total_dic = database2dic(over_time_total, over_time_dic_key_list)
+    result = {'data':[], 'filters':{}}
+    endYearMonth_filters = []
+    userId_filters = []
+    for over_time in over_time_total_dic:
+        over_time['overtime'] = "{}天{}时".format(over_time['ODay'], over_time['OTime'])
+        over_time['groupItem'] = []
+        for history in over_time_detials_dic:
+            if over_time['userId'] == history['userId'] and history['applyEndTime'].startswith(over_time['endYearMonth']):
+                over_time['groupItem'].append(history)
+        result['data'].append(over_time)
+        endYearMonth_filters.append(over_time['endYearMonth'])
+        userId_filters.append(over_time['userId'])
+    endYearMonth_filters,userId_filters = set(endYearMonth_filters), set(userId_filters)
+    result['filters']['endYearMonth_filters'] = [{'text': x, 'value': x} for x in endYearMonth_filters]
+    result['filters']['userId_filters'] = [{'text': x, 'value': x} for x in userId_filters]
+
+
+    return result
+
+
+def getOverTimeData(request):
+    if request.method == "POST":
+        over_time_detials = get_over_time(all=True)
+        over_time_total = get_total_over_time(all=True)
+        data = combine_history_and_over_time(over_time_detials, over_time_total)
+        response = set_response(1, 'success', data)
+    else:
+        response = set_response(0, 'filed')
+    return JsonResponse(response)
+
+def getOverTimeUserData(request):
+    if request.method == "POST":
+        param = request.POST
+        user_id = param['userId']
+        results = get_total_over_time(False, user_id=user_id)
+        results = database2dic(results, over_time_dic_key_list)
+        for r in results:
+            r['overtime'] = "{}天{}时".format(r['ODay'], r['OTime'])
+        if len(results) == 0:
+            response = set_response(2004, 'no user message')
+        else:
+            response = set_response(1, 'success', data=results)
+        return JsonResponse(response)
+

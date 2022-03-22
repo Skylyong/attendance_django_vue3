@@ -10,8 +10,8 @@
       <a-table
         :columns="innerColumns"
         :data-source="record.groupItem"
-        :rowKey="(item) => item.applyTime"
-        :pagination="false"
+        :rowKey="(item) => item.id"
+        :pagination="true"
       >
       </a-table>
     </template>
@@ -25,41 +25,31 @@ const columns = [
   {
     title: "员工号",
     dataIndex: "userId",
-    width: "8%",
+    width: "10%",
   },
 
   {
     title: "姓名",
     dataIndex: "name",
-    width: "8%",
-  },
-  {
-    title: "公休总天数(2022年)",
-    dataIndex: "generalHolidayTotal",
     width: "10%",
   },
   {
-    title: "公休剩余(天:时)",
-    dataIndex: "generalHolidayRemainder",
-    width: "10%",
+    title: "公休天数(2022年)",
+    dataIndex: "HolidayTotal",
+    width: "20%",
   },
   {
-    title: "积休剩余(天:时)",
-    dataIndex: "accumulateHolidayRemainder",
-    width: "10%",
+    title: "积  休(天:时)",
+    dataIndex: "HolidayRemainder",
+    width: "20%",
+  },
+    {
+    title: "请 假(天:时)",
+    dataIndex: "cost",
+    width: "20%",
   },
   {
-    title: "积休已经用(天:时)",
-    dataIndex: "accumulateHolidayUsed",
-    width: "15%",
-  },
-  {
-    title: "值班加班换积休(天:时)",
-    dataIndex: "barterAccumulateHoliday",
-    width: "15%",
-  },
-  {
-    title: "总休息池(天:时)",
+    title: "休息池(天:时)",
     dataIndex: "restPoolTotal",
   },
 ];
@@ -78,7 +68,7 @@ const innerColumns = [
     title: "申请时间",
     dataIndex: "applyTime",
     width: "7%",
-    sorter: (a, b) => a.id - b.id,
+    sorter: (a, b) => a.applyTime - b.applyTime,
   },
 
   {
@@ -100,43 +90,64 @@ const innerColumns = [
     dataIndex: "applyTimeLast",
     sorter: true,
     width: "8%",
-    sorter: (a, b) => a.timeLast - b.timeLast,
+    sorter: (a, b) => a.applyTimeLast - b.applyTimeLast,
   },
   {
-    title: "类型",
+    title: "申请类型",
     dataIndex: "applyType",
     filters: [
       {
-        text: "公休",
-        value: "公休",
+        text: "加班",
+        value: "加班",
       },
       {
-        text: "值班加班",
-        value: "值班加班",
+        text: "值班",
+        value: "值班",
+      },
+        {
+        text: "请假",
+        value: "请假",
       },
     ],
     onFilter: (value, record) => record.applyType.indexOf(value) === 0,
     // sorter: (a, b) => a.applyType.length - b.applyType.length,
     width: "10%",
   },
+
   {
-    title: "休期种类",
-    dataIndex: "holidayType",
+    title: "是否节假",
+    dataIndex: "isHoliday",
     filters: [
       {
-        text: "公休请假",
-        value: "公休请假",
+        text: "是",
+        value: "是",
       },
       {
-        text: "加班换积休",
-        value: "加班换积休",
+        text: "	否",
+        value: "否",
       },
-      {
-        text: "值班换积休",
-        value: "值班换积休",
-      },
+     
     ],
-    onFilter: (value, record) => record.holidayType.indexOf(value) === 0,
+    onFilter: (value, record) => record.isHoliday.indexOf(value) === 0,
+    // sorter: (a, b) => a.holidayType.length - b.holidayType.length,
+    width: "10%",
+  },
+
+  {
+    title: "换算类型",
+    dataIndex: "conversionType",
+    filters: [
+      {
+        text: "加班费",
+        value: "加班费",
+      },
+      {
+        text: "累加积休",
+        value: "累加积休",
+      },
+     
+    ],
+    onFilter: (value, record) => record.conversionType.indexOf(value) === 0,
     // sorter: (a, b) => a.holidayType.length - b.holidayType.length,
     width: "10%",
   },
@@ -158,12 +169,8 @@ const innerColumns = [
         value: "通过",
       },
       {
-        text: "不通过",
-        value: "不通过",
-      },
-      {
-        text: "未审批",
-        value: "未审批",
+        text: "驳回",
+        value: "驳回",
       },
     ],
   },
@@ -172,7 +179,7 @@ const innerColumns = [
     dataIndex: "approveNote",
     sorter: true,
     width: "10%",
-    sorter: (a, b) => a.applyReason.length - b.applyReason.length,
+    sorter: (a, b) => a.approveNote.length - b.approveNote.length,
   },
 ];
 

@@ -15,6 +15,7 @@
       </div>
     </template>
 
+
     <template #approveState="{ record }">
       <div class="editable-cell">
         <div v-if="editableData[record.id]" class="editable-cell-input-wrapper">
@@ -64,12 +65,12 @@ export default defineComponent({
   setup() {
     const options = ref([
       {
-        value: "1",
+        value: "2",
         label: "通过",
       },
       {
-        value: "2",
-        label: "不通过",
+        value: "1",
+        label: "驳回",
       },
     ]);
 
@@ -83,7 +84,7 @@ export default defineComponent({
       {
         title: "姓名",
         dataIndex: "name",
-        width: "8%",
+        width: "5%",
         // sorter: (a, b) => a.length - b.length,
       },
 
@@ -101,6 +102,12 @@ export default defineComponent({
         width: "8%",
         // sorter: (a, b) => a.applyEndTime - b.applyEndTime,
       },
+
+      {
+        title: "申请时长",
+        dataIndex: "applyTimeLast",
+        width: "8%",
+      },
       {
         title: "申请类型",
         dataIndex: "applyType",
@@ -114,31 +121,23 @@ export default defineComponent({
         // ],
         // onFilter: (value, record) => record.applyType.indexOf(value) === 0,
         // sorter: (a, b) => a.applyType.length - b.applyType.length,
-        width: "8%",
+        width: "5%",
       },
       {
-        title: "假期种类",
-        dataIndex: "holidayType",
-        // filters: [{
-        //   text: '公休请假',
-        //   value: '公休请假',
-        // }, {
-        //   text: '加班换积休',
-        //   value: '加班换积休',
-        // },
-        // {
-        //   text: '值班换积休',
-        //   value: '值班换积休',
-        // }
-        // ],
-        // onFilter: (value, record) => record.holidayType.indexOf(value) === 0,
-        // sorter: (a, b) => a.holidayType.length - b.holidayType.length,
-        width: "8%",
+        title: "是否节假",
+        dataIndex: "isHoliday",
+        width: "5%",
       },
+        {
+        title: "换算类型",
+        dataIndex: "conversionType",
+        width: "5%",
+      },
+      ,
       {
         title: "申请原因",
         dataIndex: "applyReason",
-        width: "15%",
+        width: "20%",
         // sorter: (a, b) => a.applyReason.length - b.applyReason.length,
       },
       {
@@ -151,11 +150,11 @@ export default defineComponent({
         },
       },
       {
-        title: "审批结果",
-        dataIndex: "approveState",
+        title: "审批状态",
+        dataIndex: "approveState", //approveState
         // sorter: (a, b) => a.approveState.length - b.approveState.length,
         // onFilter: (value, record) => record.approveState.indexOf(value) === 0,
-        width: "8%",
+        width: "5%",
         slots: {
           customRender: "approveState",
         },

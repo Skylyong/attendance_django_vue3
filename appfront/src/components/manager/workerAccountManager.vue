@@ -47,7 +47,7 @@
         </a-form-item>
 
         <a-form-item label="值班时长">
-          <p style="text-align: left">{{ formState.user.applyTimeLength }}</p>
+          <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
         </a-form-item>
         <a-form-item label="值班原因">
           <a-textarea
@@ -78,7 +78,7 @@
         </a-form-item>
 
         <a-form-item label="加班时长">
-          <p style="text-align: left">{{ formState.user.applyTimeLength }}</p>
+          <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
         </a-form-item>
         <a-form-item label="加班原因">
           <a-textarea
@@ -101,7 +101,7 @@
           />
         </a-form-item>
         <a-form-item label="请假时长">
-          <p style="text-align: left">{{ formState.user.applyTimeLength }}</p>
+          <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
         </a-form-item>
         <a-form-item label="请假原因">
           <a-textarea
@@ -124,12 +124,13 @@ import dayjs from "dayjs";
 import { message } from "ant-design-vue";
 import { defineComponent, ref, reactive } from "vue";
 import moment from "moment";
+import { workerApply } from "../../api/api.js";
 
 export default defineComponent({
   setup() {
     const formState = reactive({
       user: {
-        applyTimeLength: "",
+        applyTimeLast: "",
         applyReason: "",
         applyType: "值班",
         applyDate: "",
@@ -156,9 +157,9 @@ export default defineComponent({
       if (formState.user.applyType == "值班") {
         let week = moment(value).day();
         if (week == 0 || week == 6) {
-          formState.user.applyTimeLength = "1.5 天";
+          formState.user.applyTimeLast = "1.5 天";
         } else {
-          formState.user.applyTimeLength = "0.5 天";
+          formState.user.applyTimeLast = "0.5 天";
         }
       }
     };
@@ -169,18 +170,18 @@ export default defineComponent({
       var day = moment(value[1]).diff(moment(value[0]), "day");
       hour = hour - day * 24;
 
-      formState.user.applyTimeLength =
+      formState.user.applyTimeLast =
         day.toString() + "天" + hour.toString() + "时";
     };
 
     const applyTypeChange = (value) => {
-      formState.user.applyTimeLength = "";
+      formState.user.applyTimeLast = "";
       formState.user.applyReason = "";
     };
 
     const onFinish = (value) => {
       const dataJson = {};
-      if (formState.user.applyTimeLength != "") {
+      if (formState.user.applyTimeLast != "") {
         if (
           formState.user.conversionType == 0 &&
           formState.user.applyReason.length == 0
@@ -191,20 +192,41 @@ export default defineComponent({
             dataJson["applyType"] = formState.user.applyType;
             dataJson["applyDate"] = formState.user.applyDate;
             dataJson["isHoliday"] = formState.user.isHoliday;
-            dataJson["applyTimeLength"] = formState.user.applyTimeLength;
+            dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
           } else if (formState.user.applyType == "加班") {
             dataJson["applyType"] = formState.user.applyType;
             dataJson["conversionType"] = formState.user.conversionType;
             dataJson["applyDate"] = formState.user.applyDate;
-            dataJson["applyTimeLength"] = formState.user.applyTimeLength;
+            dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
           } else {
             dataJson["applyType"] = formState.user.applyType;
             dataJson["applyDate"] = formState.user.applyDate;
-            dataJson["applyTimeLength"] = formState.user.applyTimeLength;
+            dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
           }
+
+
+      workerApply(
+       formState.user
+      ).then(
+        (response) => {
+          if (response["code"] == 1) {
+            message.success("提交成功");
+          } else {
+            message.error("提交失败");
+          }
+        },
+        (response) => {
+          message.error("提交提交失败，服务器访问错误！");
+        }
+      );
+
+
+
+
+
         }
       } else {
         message.error("数据录入不完整！");
@@ -212,22 +234,9 @@ export default defineComponent({
 
       // console.log(dataJson);
       // 接下来把dataJson传给后端服务器完成数据提交任务
+
+
     };
-
-    const info = () => {
-      Modal.info({
-        title: "This is a notification message",
-        content: h("div", {}, [
-          h("p", "some messages...some messages..."),
-          h("p", "some messages...some messages..."),
-        ]),
-
-        onOk() {
-          console.log("ok");
-        },
-      });
-    };
-
     return {
       onFinish,
       applyTypeChange,

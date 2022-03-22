@@ -26,7 +26,7 @@
         </a-menu-item>
         <a-menu-item key="3">
           <bar-chart-outlined />
-          <span class="nav-text" v-on:click="workerManager">伙伴管理</span>
+          <span class="nav-text" v-on:click="workerManager">加班费汇总</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
@@ -87,7 +87,7 @@ export default defineComponent({
       router.push({ path: "/manager/allWorkerStatisticsData" });
     };
     let workerManager = () => {
-      router.push({ path: "/manager/workerAccountManager" });
+      router.push({ path: "/manager/overtimeStatistics" });
     };
 
     return {

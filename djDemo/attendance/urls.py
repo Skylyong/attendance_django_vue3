@@ -20,4 +20,6 @@ urlpatterns = [
     url(r'^getPoolData/$', views.getPoolData),
     # url('^get_no_approve_history_count/$', views.get_no_approve_history_count)
     url(r'^getUserPoolData/$', views.getUserPoolData),
+    url(r'^getOverTimeData/$', views.getOverTimeData),
+    url(r'^getOverTimeUserData/$', views.getOverTimeUserData),
 ]

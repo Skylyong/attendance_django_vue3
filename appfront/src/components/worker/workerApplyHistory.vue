@@ -10,7 +10,7 @@
       <a-popconfirm
         v-if="dataSource.length && record.approveState == '未审批'"
         title="确定删除吗?"
-        @confirm="onDelete(record.applyTime)"
+        @confirm="onDelete(record.id)"
       >
         <a>删除</a>
       </a-popconfirm>
@@ -27,12 +27,12 @@ import axios from "axios";
 import { CheckOutlined, EditOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 const columns = [
-  {
-    title: "序号",
-    dataIndex: "id",
-    width: "8%",
-    sorter: (a, b) => a.id - b.id,
-  },
+  // {
+  //   title: "序号",
+  //   dataIndex: "id",
+  //   width: "8%",
+  //   sorter: (a, b) => a.id - b.id,
+  // },
   {
     title: "申请时间",
     dataIndex: "applyTime",
@@ -59,44 +59,61 @@ const columns = [
     dataIndex: "applyTimeLast",
     sorter: true,
     width: "8%",
-    sorter: (a, b) => a.timeLast - b.timeLast,
+    // sorter: (a, b) => a.timeLast.length - b.timeLast.length,
   },
   {
-    title: "休假状态",
+    title: "申请类型",
     dataIndex: "applyType",
     filters: [
       {
-        text: "公休",
-        value: "公休",
+        text: "值班",
+        value: "值班",
       },
       {
-        text: "值班加班",
-        value: "值班加班",
+        text: "加班",
+        value: "加班",
+      },
+      {
+        text: "请假",
+        value: "请假",
       },
     ],
     onFilter: (value, record) => record.applyType.indexOf(value) === 0,
-    sorter: (a, b) => a.applyType.length - b.applyType.length,
+    // sorter: (a, b) => a.applyType.length - b.applyType.length,
     width: "12%",
   },
   {
-    title: "假期种类",
-    dataIndex: "holidayType",
+    title: "是否节假",
+    dataIndex: "isHoliday",
     filters: [
       {
-        text: "公休请假",
-        value: "公休请假",
+        text: "是",
+        value: "是",
       },
       {
-        text: "加班换积休",
-        value: "加班换积休",
+        text: "否",
+        value: "否",
       },
-      {
-        text: "值班换积休",
-        value: "值班换积休",
-      },
+     
     ],
-    onFilter: (value, record) => record.holidayType.indexOf(value) === 0,
-    sorter: (a, b) => a.holidayType.length - b.holidayType.length,
+    onFilter: (value, record) => record.isHoliday.indexOf(value) === 0,
+    width: "12%",
+  },
+  {
+    title: "换算类型",
+    dataIndex: "conversionType",
+    filters: [
+      {
+        text: "累加积休",
+        value: "累加积休",
+      },
+      {
+        text: "加班费",
+        value: "加班费",
+      },
+    
+    ],
+    onFilter: (value, record) => record.conversionType.indexOf(value) === 0,
     width: "12%",
   },
   {
@@ -117,8 +134,8 @@ const columns = [
         value: "通过",
       },
       {
-        text: "不通过",
-        value: "不通过",
+        text: "驳回",
+        value: "驳回",
       },
       {
         text: "未审批",
@@ -186,7 +203,7 @@ export default defineComponent({
         (response) => {
           if (1 === response["code"]) {
             dataSource.value = dataSource.value.filter(
-              (item) => item.applyTime !== key
+              (item) => item.id !== key
             );
             message.success("从服务器删除成功！");
             getworkerApplyHistory(getid).then((response) => {

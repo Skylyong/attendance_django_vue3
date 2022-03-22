@@ -7,6 +7,7 @@ c = conn.cursor()
 c.execute('drop table ApplyHistory')
 c.execute('drop table WorkerMessage')
 c.execute('drop table RestPoolTab')
+c.execute('drop table OverTimeTab')
 c.execute('drop table LoginMessage')
 # 创建数据库中的表
 conn.commit()
@@ -31,7 +32,8 @@ c.execute('''CREATE TABLE IF NOT EXISTS ApplyHistory
        applyStartTime VARCHAR(20) NOT NULL ,
        applyEndTime VARCHAR(20) NOT NULL ,
        applyType INT NOT NULL ,
-       holidayType INT NOT NULL ,
+       isHoliday INT ,
+       conversionType INT ,
        applyTimeLast VARCHAR(20) NOT NULL  ,
        approveState INT NOT NULL ,
        approveNote           VARCHAR(100),
@@ -40,17 +42,22 @@ conn.commit()
 # 创建休息池表
 c.execute('''CREATE TABLE IF NOT EXISTS RestPoolTab
        (userId VARCHAR(20) REFERENCES LoginMessage(userId) unique,
-       generalHolidayTotal int not null DEFAULT 0 ,
-       generalHolidayRemainderDays int DEFAULT 0,
-       generalHolidayRemainderTime FLOAT DEFAULT 0,
-       accumulateHolidayRemainderDays int DEFAULT 0,
-       accumulateHolidayRemainderTime FLOAT DEFAULT 0,
-       accumulateHolidayUsedDays int DEFAULT 0 ,
-       accumulateHolidayUsedTime FLOAT DEFAULT 0,
-       barterAccumulateHolidayDays int DEFAULT 0,
-       barterAccumulateHolidayTime FLOAT DEFAULT 0,
-       restPoolTotalDays int  DEFAULT 0,
-       restPoolTotalTime FLOAT DEFAULT 0);''')
+       HolidayTotal int not null DEFAULT 0 ,
+       HolidayRemainderDay int not null DEFAULT 0,
+       HolidayRemainderTime int not null DEFAULT 0,
+       costDay int not null DEFAULT 0,
+       costTime int not null DEFAULT 0,
+       restPoolTotalDay int not null DEFAULT 0,
+       restPoolTotalTime int not null DEFAULT 0);''')
+conn.commit()
+
+# 创建加班统计表
+c.execute('''CREATE TABLE IF NOT EXISTS OverTimeTab
+       (Id integer PRIMARY KEY   autoincrement,
+       userId VARCHAR(20) REFERENCES LoginMessage(userId),
+       endYearMonth VARCHAR(20) not null ,
+       ODay int not null DEFAULT 0,
+       OTime int not null DEFAULT 0);''')
 conn.commit()
 
 print("数据表创建成功")
@@ -64,21 +71,21 @@ c.execute("INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) \
        VALUES (1, 'admin','admin1234', 2)")
 conn.commit()
 
-for item in [[73, '00073'], [2440, '02440'], [2587, '02587']]:
-    cmd = "INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) VALUES ({}, \'user{}\', 1234, 1)".format(
+for item in [['00073', '00073'], ['02440', '02440'], ['02587', '02587']]:
+    cmd = "INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) VALUES (\'{}\', \'user{}\', 1234, 1)".format(
         item[0], item[1])
     c.execute(cmd)
 conn.commit()
 
-for item in [(73, '张三'), (2440, '李四'), (2587, '王五二')]:
-    cmd = "INSERT INTO WorkerMessage (userId, NAME, manager ) VALUES ({}, \'{}\', 1)".format(
+for item in [('00073', '张三'), ('02440', '李四'), ('02587', '王五二')]:
+    cmd = "INSERT INTO WorkerMessage (userId, NAME, manager ) VALUES (\'{}\', \'{}\', 1)".format(
         item[0], item[1])
     c.execute(cmd)
 conn.commit()
 
-for item in [(73, 15), (2440, 10), (2587, 10)]:
-    cmd = "INSERT INTO RestPoolTab (userid, generalHolidayTotal) VALUES ({}, {})".format(
-        item[0], item[1])
+for item in [('00073', 15), ('02440', 10), ('02587', 10)]:
+    cmd = "INSERT INTO RestPoolTab (userid, HolidayTotal,restPoolTotalDay) VALUES (\'{}\', {},{})".format(
+        item[0], item[1], item[1])
     c.execute(cmd)
 conn.commit()
 

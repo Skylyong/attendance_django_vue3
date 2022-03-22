@@ -7,6 +7,7 @@ import workerAccount from '../components/worker/workerAccount.vue'
 import allWorkerStatisticsData from '../components/manager/allWorkerStatisticsData.vue'
 import managerApprove from '../components/manager/managerApprove.vue'
 import workerAccountManager from '../components/manager/workerAccountManager.vue'
+import overtimeStatistics from '../components/manager/overtimeStatistics.vue'
 
 const routes = [
   {
@@ -29,6 +30,7 @@ const routes = [
       { path: 'allWorkerStatisticsData', component: allWorkerStatisticsData },
       { path: 'managerApprove', component: managerApprove },
       { path: 'workerAccountManager', component: workerAccountManager },
+      {path: 'overtimeStatistics', component: overtimeStatistics}
     ]
   },
 
