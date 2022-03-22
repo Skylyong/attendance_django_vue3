@@ -59,11 +59,21 @@
 
  2. 普通用户界面
 
-   <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220319052435.png" alt="image-20220319052435590" style="zoom:50%;" />
+<img src="https://raw.githubusercontent.com/Skylyong/i/main/20220323054855.png" alt="image-20220323054848636" style="zoom:30%;" />
+
+<img src="https://raw.githubusercontent.com/Skylyong/i/main/20220323054948.png" alt="image-20220323054948916" style="zoom:30%;" />
+
+<img src="https://raw.githubusercontent.com/Skylyong/i/main/20220323055052.png" alt="image-20220323055051980" style="zoom:30%;" />
+
+
 
  3. 管理员界面
 
-   <img src="https://raw.githubusercontent.com/Skylyong/i/main/20220319052527.png" alt="image-20220319052527149" style="zoom:50%;" />
+<img src="https://raw.githubusercontent.com/Skylyong/i/main/20220323055220.png" alt="image-20220323055220270" style="zoom:30%;" />
+
+<img src="https://raw.githubusercontent.com/Skylyong/i/main/20220323055259.png" alt="image-20220323055259106" style="zoom:30%;" />
+
+<img src="https://raw.githubusercontent.com/Skylyong/i/main/20220323055402.png" alt="image-20220323055402177" style="zoom:30%;" />
 
 + [项目demo](http://47.103.127.226)
 + 项目编程学习资料（帮助爬坑）
