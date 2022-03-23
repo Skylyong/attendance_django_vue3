@@ -4,7 +4,8 @@ export default createStore({
 
     state: {
         isLogin: false,
-        token: ''
+        token: '',
+        pubkey: '',
     },
 
     // 获取属性的状态

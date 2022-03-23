@@ -35,7 +35,11 @@ axios.get('/login/')
         //   console.log(CSRFToken)
         axios.defaults.headers['X-CSRFToken'] = CSRFToken//getCsfrKey()
         store.state.token = CSRFToken
-        //   message.success(CSRFToken)
+        store.state.pubkey = response['data']['data']['pubkey']
+        console.log('store.state.token:', store.state.token)
+        console.log('response:', response['data'])
+        console.log('store.state.pubkey:', store.state.pubkey)
+        //   message.success(store.state.token)
     })
 
 

@@ -72,4 +72,8 @@ export const getOverTimeData = (getid) => {
 
 export const getOverTimeUserData = (getid) => {
      return post('/getOverTimeUserData/', { 'userId': getid })   
-}
+} 
+
+export const resetPwd = (new_key, userId) => {
+     return post('/resetPwd/', { 'new_key': new_key, 'userId':userId })   
+} 

@@ -10,10 +10,28 @@ from attendance.serializer import AttendanceSerializer
 from django.middleware.csrf import get_token
 from django.db import connection
 import time
+from Crypto import Random
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5 as PKCS1_cipher
+import base64
 
 
 
 
+random_generator = Random.new().read
+rsa = RSA.generate(2048, random_generator)
+# 生成私钥
+private_key = rsa.exportKey()
+print(private_key.decode('utf-8'))
+# 生成公钥
+public_key = rsa.publickey().exportKey()
+print(public_key.decode('utf-8'))
+
+with open('rsa_private_key.pem', 'wb')as f:
+    f.write(private_key)
+
+with open('rsa_public_key.pem', 'wb')as f:
+    f.write(public_key)
 
 
 history_dic_key_list = ['id', 'userId', 'applyTime', 'applyStartTime', 'applyEndTime', 'applyType',
@@ -150,8 +168,8 @@ def combine_history_and_pools(worker_apply_history, worker_pools):
     return result
 
 
-def get_response():
-    return {'code': 1, 'message': '', 'data': {}}
+def get_response(data = {}):
+    return {'code': 1, 'message': '', 'data': data}
 
 
 def set_response(code, message, data={}):
@@ -162,9 +180,26 @@ def set_response(code, message, data={}):
     return response
 
 
+def get_key(key_file):
+    with open(key_file) as f:
+        data = f.read()
+        key = RSA.importKey(data)
+    return key
+
+
+def decrypt_data(encrypt_msg):
+    private_key = get_key('rsa_private_key.pem')
+    cipher = PKCS1_cipher.new(private_key)
+    back_text = cipher.decrypt(base64.b64decode(encrypt_msg), 0)
+    return back_text.decode('utf-8')
+
+
 def login(request):
     if request.method == 'GET':
-        response = get_response()
+        with open('rsa_public_key.pem') as f:
+            public_key = f.read()
+            # public_key = data.decode('utf-8')
+        response = get_response(data={'pubkey': public_key})
         get_token(request)
         return JsonResponse(response)
 
@@ -176,6 +211,7 @@ def login(request):
         param = request.POST
         name = param['name'].strip()
         key = param['author']
+        key = decrypt_data(key)
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT name , key, accountType,userId from  LoginMessage WHERE name = %s", [name])
@@ -257,8 +293,6 @@ def minus2Pool(userId, applyTimeLast):
                                                             restPoolTotalTime, restPoolTotalDay, userId)
     with connection.cursor() as cursor:
         cursor.execute(cmd)
-
-
 
 def get_dic_result_with_database(cmd =None, database_name='', columns='', condition=''):
     '''
@@ -436,7 +470,6 @@ def delApplication(request):
 
     return JsonResponse(response)
 
-
 def save_to_database():
     pass
 
@@ -483,11 +516,9 @@ def getApplicationHistory(request):
 
 
 def getPoolData(request):
-
     # 处    理： 返回用户休息池数据
     # 请求方式： POST, 参数 user_account
     # 返回用户休息池数据和用户历史数据
-
     param = request.POST
     # try:
     if get_user_type(param['userId']) == 2:
@@ -597,8 +628,6 @@ def combine_history_and_over_time(over_time_detials, over_time_total):
     endYearMonth_filters,userId_filters = set(endYearMonth_filters), set(userId_filters)
     result['filters']['endYearMonth_filters'] = [{'text': x, 'value': x} for x in endYearMonth_filters]
     result['filters']['userId_filters'] = [{'text': x, 'value': x} for x in userId_filters]
-
-
     return result
 
 
@@ -626,3 +655,18 @@ def getOverTimeUserData(request):
             response = set_response(1, 'success', data=results)
         return JsonResponse(response)
 
+
+def resetPwd(request):
+    param = request.POST
+    new_key = param['new_key']
+    user_id = param['userId']
+    new_key = decrypt_data(new_key)
+    try:
+        with connection.cursor() as cursor:
+            cmd = "update LoginMessage set KEY=\'{}\' \
+                   where userId=\'{}\'".format(new_key, user_id)
+            cursor.execute(cmd)
+        response = set_response(1, 'success')
+    except:
+        response = set_response(0, 'failed')
+    return JsonResponse(response)

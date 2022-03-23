@@ -42,7 +42,7 @@
       <a-form-item name="remember" no-style>
         <a-checkbox v-model:checked="formState.remember">记住我</a-checkbox>
       </a-form-item>
-      <a class="login-form-forgot" href="">忘记密码</a>
+      <!-- <a class="login-form-forgot" href="">忘记密码</a> -->
     </div>
 
     <a-form-item>
@@ -56,15 +56,70 @@
       </a-button>
     </a-form-item>
   </a-form>
+
+  <template>
+    <div>
+      <a-modal
+        v-model:visible="visible"
+        title="您首次登录系统，请设置新密码!"
+        @ok="handleOk"
+      >
+        <a-form
+          :model="formState"
+          v-bind="layout"
+          class="center"
+          name="nest-messages"
+          :validate-messages="validateMessages"
+        >
+          <a-form-item
+            style="width: 300px; display: inline-flex"
+            label="输入密码"
+            name="password"
+            :rules="[{ required: true, message: '' }]"
+          >
+            <a-input-password v-model:value="formState.key1">
+              <template #prefix>
+                <LockOutlined class="site-form-item-icon" />
+              </template>
+            </a-input-password>
+          </a-form-item>
+
+          <a-form-item
+            style="width: 300px; display: inline-flex"
+            label="确认密码"
+            name="password"
+            :rules="[{ required: true, message: '' }]"
+          >
+            <a-input-password v-model:value="formState.key2">
+              <template #prefix>
+                <LockOutlined class="site-form-item-icon" />
+              </template>
+            </a-input-password>
+          </a-form-item>
+        </a-form>
+
+        <template #footer>
+          <a-button key="return" @click="handleCancel">取消</a-button>
+          <a-button key="submin" type="primary" @click="handleOk"
+            >确定</a-button
+          >
+        </template>
+      </a-modal>
+    </div>
+  </template>
 </template>
+
 <script>
 import { defineComponent, reactive, computed, ref } from "vue";
 import { UserOutlined, LockOutlined } from "@ant-design/icons-vue";
+// import {getCode} from '../assets/js/jsencryptKey'
 // import router from '@/router';
+import { JSEncrypt } from "jsencrypt";
 import { useRouter } from "vue-router";
-import { postSubmit } from "../api/api.js";
+import { postSubmit, resetPwd } from "../api/api.js";
 import { useStore } from "vuex";
 import { message } from "ant-design-vue";
+import md5 from "js-md5";
 
 export default defineComponent({
   components: {
@@ -80,9 +135,23 @@ export default defineComponent({
       username: "",
       password: "",
       remember: true,
+      key1: "",
+      key2: "",
     });
-    var that = this;
+
+    function getCode(password) {
+      let encrypt = new JSEncrypt();
+      // console.log('store.state.pubkey:',store.state.pubkey)
+      encrypt.setPublicKey(store.state.pubkey);
+      let data = encrypt.encrypt(password);
+      return data;
+    }
+    var that = this; //827ccb0eea8a706c4c34a16891f84e7b
+    const resetPassword = false; // 是否弹出重置初始密码窗口
     const onFinish = (values) => {
+      let temp_password = values.password;
+      values.password = md5(values.password);
+      values.password = getCode(values.password);
       postSubmit(values.username, values.password).then(
         // console.log(response),
         (response) => {
@@ -93,11 +162,18 @@ export default defineComponent({
             localStorage.setItem("Flag", "isLogin");
             localStorage.setItem("userType", response["data"]["accountType"]);
             store.dispatch("setUser", true);
-
-            if (response["data"]["accountType"] == 2) {
-              router.push({ path: "/manager/managerApprove" });
-            } else {
-              router.push({ path: "/worker/account" });
+            console.log("temp_password:", temp_password);
+            if (temp_password == "1234" && resetPassword) {
+              showModal();
+            } 
+            else {
+              if (visible.value == false) {
+                if (response["data"]["accountType"] == 2) {
+                  router.push({ path: "/manager/managerApprove" });
+                } else {
+                  router.push({ path: "/worker/account" });
+                }
+              }
             }
           } else if (response["code"] == 2004) {
             message.error("找不到该用户！");
@@ -118,7 +194,49 @@ export default defineComponent({
     const disabled = computed(() => {
       return !(formState.username && formState.password);
     });
+
+    const visible = ref(false);
+
+    const showModal = () => {
+      visible.value = true;
+    };
+
+    const handleOk = () => {
+      if (formState.key1 != "1234" && formState.key1 == formState.key2) {
+        let userid = localStorage.getItem("Userid");
+
+        formState.key1 = md5(formState.key1);
+        formState.key1 = getCode(formState.key1);
+        formState.key2 = md5(formState.key2);
+        formState.key2 = getCode(formState.key2);
+
+        resetPwd(formState.key1, userid).then(
+          (response) => {
+            if (response["code"] == 1) {
+              message.success("重置密码成功");
+              visible.value = false;
+            } else {
+              message.error("重置密码失败");
+            }
+          },
+          (response) => {
+            message.error("重置密码失败");
+          }
+        );
+      } else {
+        message.error("两次输入不一致或密码等于初始密码");
+      }
+    };
+
+    const handleCancel = () => {
+      visible.value = false;
+    };
+
     return {
+      visible,
+      showModal,
+      handleOk,
+      handleCancel,
       formState,
       onFinish,
       onFinishFailed,

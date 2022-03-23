@@ -1,4 +1,5 @@
 import sqlite3
+import hashlib
 
 conn = sqlite3.connect('../db.sqlite3')
 conn.execute('pragma foreign_keys=on')
@@ -67,23 +68,32 @@ print("数据表创建成功")
 # for row in cursor:
 #     print (row)
 
+def getMd5(string):
+    m1 = hashlib.md5()
+    m1.update(string.encode('utf-8'))
+    return m1.hexdigest()
+
 c.execute("INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) \
-       VALUES (1, 'admin','admin1234', 2)")
+       VALUES (1, 'admin',\'{}\', 2)".format(getMd5('1234')))
 conn.commit()
 
-for item in [['00073', '00073'], ['02440', '02440'], ['02587', '02587']]:
-    cmd = "INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) VALUES (\'{}\', \'user{}\', 1234, 1)".format(
-        item[0], item[1])
+for idx in ['00073', '02440' , '02587', '02784', '02791','02794','06391','89207','89217','89298','89376','89757','89758','89900']:
+    cmd = "INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) VALUES (\'{}\', \'{}\', \'{}\', 1)".format(
+        idx, idx, getMd5('1234'))
     c.execute(cmd)
 conn.commit()
 
-for item in [('00073', '张三'), ('02440', '李四'), ('02587', '王五二')]:
+for item in [('00073', '沈*伟'), ('02440', '袁*'), ('02587', '曹*'),\
+             ('02784', '温*纲'), ('02791', '钱*'), ('02794','刘*威'),\
+             ('06391','尤*珏'),('89207', '杨*超'),('89217', '陈*'),('89298', '曹*'),
+             ('89376','徐*山'),('89757', '徐*'),('89758','庄*良'), ('89900', '袁*彬')]:
     cmd = "INSERT INTO WorkerMessage (userId, NAME, manager ) VALUES (\'{}\', \'{}\', 1)".format(
         item[0], item[1])
     c.execute(cmd)
 conn.commit()
 
-for item in [('00073', 15), ('02440', 10), ('02587', 10)]:
+for item in [('00073', 15), ('02440', 10), ('02587', 10), ('02784',10), ('02791',10),\
+             ('02794', 10),('06391',15),('89207',10),('89217',10),('89298',10),('89376',10),('89757',10),('89758',10),('89900',10)]:
     cmd = "INSERT INTO RestPoolTab (userid, HolidayTotal,restPoolTotalDay) VALUES (\'{}\', {},{})".format(
         item[0], item[1], item[1])
     c.execute(cmd)

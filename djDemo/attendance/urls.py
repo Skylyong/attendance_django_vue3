@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^getUserPoolData/$', views.getUserPoolData),
     url(r'^getOverTimeData/$', views.getOverTimeData),
     url(r'^getOverTimeUserData/$', views.getOverTimeUserData),
+    url(r'^resetPwd/$', views.resetPwd),
 ]
