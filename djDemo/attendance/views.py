@@ -663,12 +663,12 @@ def getOverTimeUserData(request):
 def resetPwd(request):
     param = request.POST
     new_key = param['new_key']
-    user_id = param['userId']
+    name = param['userId']
     new_key = decrypt_data(new_key)
     try:
         with connection.cursor() as cursor:
             cmd = "update LoginMessage set KEY=\'{}\' \
-                   where userId=\'{}\'".format(new_key, user_id)
+                   where name=\'{}\'".format(new_key, name)
             cursor.execute(cmd)
         response = set_response(1, 'success')
     except:
