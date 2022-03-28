@@ -69,11 +69,15 @@
         <a-form-item label="加班日期">
           <a-range-picker
             style="width: 225px"
-            :show-time="{ format: 'HH' }"
-            format="YYYY-MM-DD HH"
-            :placeholder="['开始时间', '结束时间']"
+            @ok = onRangeOk
             @change="onRangeChange"
-            @ok="onRangeOk"
+            :placeholder="['开始时间', '结束时间']"
+            :disabled-time="disabledRangeTime"
+            :show-time="{
+              format:'HH:mm',
+              hideDisabledOptions: true,
+            }"
+            format="YYYY-MM-DD HH:mm"
           />
         </a-form-item>
 
@@ -91,13 +95,17 @@
       </template>
       <template v-else>
         <a-form-item label="请假时间">
-          <a-range-picker
+         <a-range-picker
             style="width: 225px"
-            :show-time="{ format: 'HH' }"
-            format="YYYY-MM-DD HH"
-            :placeholder="['开始时间', '结束时间']"
+            @ok = onRangeOk
             @change="onRangeChange"
-            @ok="onRangeOk"
+            :placeholder="['开始时间', '结束时间']"
+            :disabled-time="disabledRangeTime"
+            :show-time="{
+              format:'HH:mm',
+              hideDisabledOptions: true,
+            }"
+            format="YYYY-MM-DD HH:mm"
           />
         </a-form-item>
         <a-form-item label="请假时长">
@@ -132,7 +140,7 @@ export default defineComponent({
       user: {
         applyTimeLast: "",
         applyReason: "",
-        applyType: '值班',
+        applyType: "值班",
         applyDate: "",
         isHoliday: 0,
         conversionType: 1,
@@ -152,9 +160,9 @@ export default defineComponent({
         label: "请假",
       },
     ]);
-let dataString = ref()
+    let dataString = ref();
     const onRangeChange = (value, dateString) => {
-      dataString = dateString
+      dataString = dateString;
       if (formState.user.applyType == "值班") {
         let week = moment(value).day();
         if (week == 0 || week == 6) {
@@ -169,8 +177,12 @@ let dataString = ref()
       // console.log(value);
       var hour = moment(value[1]).diff(moment(value[0]), "hour");
       var day = moment(value[1]).diff(moment(value[0]), "day");
+      var minutes = moment(value[1]).diff(moment(value[0]), "minutes");
+      minutes = minutes - hour*60;
       hour = hour - day * 24;
-      if (hour >= 8){
+      hour = hour + minutes/60
+      console.log(hour);
+      if (hour >= 8) {
         hour = 8;
       }
 
@@ -206,39 +218,28 @@ let dataString = ref()
             dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
             dataJson["isHoliday"] = 2;
-            
           } else {
             dataJson["applyType"] = formState.user.applyType;
             dataJson["applyDate"] = formState.user.applyDate;
             dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
             dataJson["conversionType"] = 2;
-            dataJson["isHoliday"] = 2
+            dataJson["isHoliday"] = 2;
           }
 
-
-      let userid = localStorage.getItem("Userid");
-      workerApply(
-        userid,
-       dataJson,
-       dataString,
-      ).then(
-        (response) => {
-          if (response["code"] == 1) {
-            message.success("提交成功");
-          } else {
-            message.error("提交失败");
-          }
-        },
-        (response) => {
-          message.error("提交提交失败，服务器访问错误！");
-        }
-      );
-
-
-
-
-
+          let userid = localStorage.getItem("Userid");
+          workerApply(userid, dataJson, dataString).then(
+            (response) => {
+              if (response["code"] == 1) {
+                message.success("提交成功");
+              } else {
+                message.error("提交失败");
+              }
+            },
+            (response) => {
+              message.error("提交提交失败，服务器访问错误！");
+            }
+          );
         }
       } else {
         message.error("数据录入不完整！");
@@ -246,19 +247,52 @@ let dataString = ref()
 
       // console.log(dataJson);
       // 接下来把dataJson传给后端服务器完成数据提交任务
-
-
     };
 
-    
+    const range = (start, end, d_type) => {
+      const result = [];
+      if (d_type === "hour") {
+        for (let i = 0; i < start; i++) {
+          result.push(i);
+        }
+        for (let i = end; i < 24; i++) {
+          result.push(i);
+        }
+      } else if (d_type === "minute") {
+        for (let i = 0; i < 60; i++) {
+          if (i % start != 0) {
+            result.push(i);
+          }
+        }
+      } else {
+        for (let i = 0; i < 60; i++) {
+          result.push(i);
+        }
+      }
+      return result;
+    };
+
+
+    const disabledRangeTime = () => {
+      {
+        return {
+          disabledHours: () => range(8, 18, "hour"),
+          disabledMinutes: () => range(15, 60, "minute"),
+          disabledSeconds: () => [55,56],
+        };
+      }
+    };
+
     return {
-      dataString, 
+      disabledRangeTime,
+      dataString,
       onFinish,
       applyTypeChange,
       onRangeChange,
       onRangeOk,
       formState,
       options_apply_type,
+      dayjs,
     };
   },
 });

@@ -14,107 +14,38 @@
     >
       <br />
       <br />
-      <h1>提交申请</h1>
+      <h1>修改密码</h1>
       <br />
       <br />
-      <a-form-item label="申请类型">
+      <a-form-item label="选择账号">
         <a-select
           ref="select"
-          v-model:value="formState.user.applyType"
-          style="width: 180px"
-          @change="applyTypeChange"
-          :options="options_apply_type"
+          v-model:value="formState.userId"
+          style="width: 225px"
+          :options="options_apply_type.data"
         >
         </a-select>
       </a-form-item>
 
-      <template v-if="formState.user.applyType == '值班'">
-        <a-form-item label="值班日期">
-          <a-date-picker
-            @ok="onRangeOk"
-            @change="onRangeChange"
-            v-model:value="formState.user.applyDate"
-          />
-        </a-form-item>
-        <a-form-item label="是否节假  " @click="info">
-          <a-radio-group
-            v-model:value="formState.user.isHoliday"
-            style="margin-right: auto"
-          >
-            <a-radio :style="radioStyle" :value="1">是</a-radio>
-            <a-radio :style="radioStyle" :value="0">否</a-radio>
-          </a-radio-group>
-        </a-form-item>
+      <a-form-item label="输入密码">
+        <a-input-password v-model:value="formState.key1">
+          <template #prefix>
+            <LockOutlined class="site-form-item-icon" />
+          </template>
+        </a-input-password>
+      </a-form-item>
 
-        <a-form-item label="值班时长">
-          <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
-        </a-form-item>
-        <a-form-item label="值班原因">
-          <a-textarea
-            style="width: 160pt"
-            v-model:value="formState.user.applyReason"
-            show-count
-            :maxlength="50"
-          />
-        </a-form-item>
-      </template>
+      <a-form-item label="确认密码">
+        <a-input-password v-model:value="formState.key2">
+          <template #prefix>
+            <LockOutlined class="site-form-item-icon" />
+          </template>
+        </a-input-password>
+      </a-form-item>
 
-      <template v-else-if="formState.user.applyType == '加班'">
-        <a-form-item label="换算类型">
-          <a-radio-group v-model:value="formState.user.conversionType">
-            <a-radio :style="radioStyle" :value="1">累加积休</a-radio>
-            <a-radio :style="radioStyle" :value="0">加班费</a-radio>
-          </a-radio-group>
-        </a-form-item>
-        <a-form-item label="加班日期">
-          <a-range-picker
-            style="width: 225px"
-            :show-time="{ format: 'HH' }"
-            format="YYYY-MM-DD HH"
-            :placeholder="['开始时间', '结束时间']"
-            @change="onRangeChange"
-            @ok="onRangeOk"
-          />
-        </a-form-item>
-
-        <a-form-item label="加班时长">
-          <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
-        </a-form-item>
-        <a-form-item label="加班原因">
-          <a-textarea
-            style="width: 160pt"
-            v-model:value="formState.user.applyReason"
-            show-count
-            :maxlength="50"
-          />
-        </a-form-item>
-      </template>
-      <template v-else>
-        <a-form-item label="请假时间">
-          <a-range-picker
-            style="width: 225px"
-            :show-time="{ format: 'HH' }"
-            format="YYYY-MM-DD HH"
-            :placeholder="['开始时间', '结束时间']"
-            @change="onRangeChange"
-            @ok="onRangeOk"
-          />
-        </a-form-item>
-        <a-form-item label="请假时长">
-          <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
-        </a-form-item>
-        <a-form-item label="请假原因">
-          <a-textarea
-            style="width: 160pt"
-            v-model:value="formState.user.applyReason"
-            show-count
-            :maxlength="50"
-          />
-        </a-form-item>
-      </template>
-      <br />
-
-      <a-button type="primary" html-type="Submit">提交</a-button>
+      <a-button type="primary" html-type="Submit" @click="handleOk"
+        >重置</a-button
+      >
     </a-form>
   </div>
 </template>
@@ -124,124 +55,69 @@ import dayjs from "dayjs";
 import { message } from "ant-design-vue";
 import { defineComponent, ref, reactive } from "vue";
 import moment from "moment";
-import { workerApply } from "../../api/api.js";
+import { resetPwd, getWorkerId } from "../../api/api.js";
+import md5 from "js-md5";
+import { JSEncrypt } from "jsencrypt";
+import { useStore } from "vuex";
+
+
 
 export default defineComponent({
   setup() {
+    const store = useStore();
     const formState = reactive({
-      user: {
-        applyTimeLast: "",
-        applyReason: "",
-        applyType: "值班",
-        applyDate: "",
-        isHoliday: 1,
-        conversionType: 1,
-      },
+      key1: "",
+      key2: "",
+      userId: "",
     });
-    const options_apply_type = ref([
-      {
-        value: "值班",
-        label: "值班",
-      },
-      {
-        value: "加班",
-        label: "加班",
-      },
-      {
-        value: "请假",
-        label: "请假",
-      },
-    ]);
 
-    const onRangeChange = (value, dateString) => {
-      if (formState.user.applyType == "值班") {
-        let week = moment(value).day();
-        if (week == 0 || week == 6) {
-          formState.user.applyTimeLast = "1.5 天";
-        } else {
-          formState.user.applyTimeLast = "0.5 天";
-        }
-      }
-    };
+    function getCode(password) {
+      let encrypt = new JSEncrypt();
+      // console.log('store.state.pubkey:',store.state.pubkey)
+      encrypt.setPublicKey(store.state.pubkey);
+      let data = encrypt.encrypt(password);
+      return data;
+    }
 
-    const onRangeOk = (value) => {
-      // console.log(value);
-      var hour = moment(value[1]).diff(moment(value[0]), "hour");
-      var day = moment(value[1]).diff(moment(value[0]), "day");
-      hour = hour - day * 24;
-
-      formState.user.applyTimeLast =
-        day.toString() + "天" + hour.toString() + "时";
-    };
-
-    const applyTypeChange = (value) => {
-      formState.user.applyTimeLast = "";
-      formState.user.applyReason = "";
-    };
-
-    const onFinish = (value) => {
-      const dataJson = {};
-      if (formState.user.applyTimeLast != "") {
-        if (
-          formState.user.conversionType == 0 &&
-          formState.user.applyReason.length == 0
-        ) {
-          message.error("请输入加班原因!");
-        } else {
-          if (formState.user.applyType == "值班") {
-            dataJson["applyType"] = formState.user.applyType;
-            dataJson["applyDate"] = formState.user.applyDate;
-            dataJson["isHoliday"] = formState.user.isHoliday;
-            dataJson["applyTimeLast"] = formState.user.applyTimeLast;
-            dataJson["applyReason"] = formState.user.applyReason;
-          } else if (formState.user.applyType == "加班") {
-            dataJson["applyType"] = formState.user.applyType;
-            dataJson["conversionType"] = formState.user.conversionType;
-            dataJson["applyDate"] = formState.user.applyDate;
-            dataJson["applyTimeLast"] = formState.user.applyTimeLast;
-            dataJson["applyReason"] = formState.user.applyReason;
-          } else {
-            dataJson["applyType"] = formState.user.applyType;
-            dataJson["applyDate"] = formState.user.applyDate;
-            dataJson["applyTimeLast"] = formState.user.applyTimeLast;
-            dataJson["applyReason"] = formState.user.applyReason;
-          }
-
-
-      workerApply(
-       formState.user
-      ).then(
-        (response) => {
-          if (response["code"] == 1) {
-            message.success("提交成功");
-          } else {
-            message.error("提交失败");
-          }
-        },
-        (response) => {
-          message.error("提交提交失败，服务器访问错误！");
-        }
-      );
-
-
-
-
-
-        }
+    let options_apply_type = ref({'data': ''});
+    let userid = localStorage.getItem("Userid");
+    getWorkerId(userid).then((response) => {
+      if (response["code"] == 1) {
+        // console.log(response["data"]);
+        options_apply_type.value = {'data':response["data"]};
+        // console.log(options_apply_type);
       } else {
-        message.error("数据录入不完整！");
+        message.error("获取员工工号失败");
       }
+    });
 
-      // console.log(dataJson);
-      // 接下来把dataJson传给后端服务器完成数据提交任务
+    const handleOk = () => {
+      if (formState.key1 == formState.key2) {
+        formState.key1 = md5(formState.key1);
+        formState.key1 = getCode(formState.key1);
+        formState.key2 = md5(formState.key2);
+        formState.key2 = getCode(formState.key2);
 
-
+        console.log(formState.userId)
+        resetPwd(formState.key1, formState.userId).then(
+          (response) => {
+            if (response["code"] == 1) {
+              message.success("重置密码成功");
+            } else {
+              message.error("重置密码失败");
+            }
+          },
+          (response) => {
+            message.error("重置密码失败");
+          }
+        );
+      } else {
+        message.error("两次输入不一致");
+      }
     };
     return {
-      onFinish,
-      applyTypeChange,
-      onRangeChange,
-      onRangeOk,
+      getWorkerId,
+      handleOk,
       formState,
       options_apply_type,
     };

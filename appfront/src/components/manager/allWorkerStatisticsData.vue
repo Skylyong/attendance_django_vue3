@@ -36,17 +36,22 @@ const columns = [
   {
     title: "公休天数(2022年)",
     dataIndex: "HolidayTotal",
-    width: "20%",
+    width: "10%",
   },
   {
-    title: "积  休(天:时)",
+    title: "上年剩余积休(天:时)",
+    dataIndex: "lastYearRemainder",
+    width: "10%",
+  },
+  {
+    title: "本年度积休(天:时)",
     dataIndex: "HolidayRemainder",
-    width: "20%",
+    width: "10%",
   },
     {
     title: "请 假(天:时)",
     dataIndex: "cost",
-    width: "20%",
+    width: "15%",
   },
   {
     title: "休息池(天:时)",

@@ -147,7 +147,7 @@ export default defineComponent({
       return data;
     }
     var that = this; //827ccb0eea8a706c4c34a16891f84e7b
-    const resetPassword = false; // 是否弹出重置初始密码窗口
+    const resetPassword = true; // 是否弹出重置初始密码窗口
     const onFinish = (values) => {
       let temp_password = values.password;
       values.password = md5(values.password);
@@ -163,7 +163,7 @@ export default defineComponent({
             localStorage.setItem("userType", response["data"]["accountType"]);
             store.dispatch("setUser", true);
             console.log("temp_password:", temp_password);
-            if (temp_password == "1234" && resetPassword) {
+            if (temp_password == "12345678" && resetPassword) {
               showModal();
             } 
             else {
@@ -202,7 +202,7 @@ export default defineComponent({
     };
 
     const handleOk = () => {
-      if (formState.key1 != "1234" && formState.key1 == formState.key2) {
+      if (formState.key1 != "12345678" && formState.key1 == formState.key2) {
         let userid = localStorage.getItem("Userid");
 
         formState.key1 = md5(formState.key1);

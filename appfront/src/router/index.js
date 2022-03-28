@@ -8,6 +8,7 @@ import allWorkerStatisticsData from '../components/manager/allWorkerStatisticsDa
 import managerApprove from '../components/manager/managerApprove.vue'
 import workerAccountManager from '../components/manager/workerAccountManager.vue'
 import overtimeStatistics from '../components/manager/overtimeStatistics.vue'
+import workerAccountChange from '../components/worker/workerAccountChange.vue'
 
 const routes = [
   {
@@ -47,6 +48,7 @@ const routes = [
       { path: 'applyHistory', component: workerApplyHistory },
       { path: 'apply', component: workerApply },
       { path: 'timePool', component: workerApplyStatistics },
+      { path :'workerAccountChange', component: workerAccountChange}
 
     ]
   }

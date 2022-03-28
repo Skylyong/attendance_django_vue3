@@ -23,4 +23,9 @@ urlpatterns = [
     url(r'^getOverTimeData/$', views.getOverTimeData),
     url(r'^getOverTimeUserData/$', views.getOverTimeUserData),
     url(r'^resetPwd/$', views.resetPwd),
+    url(r'^getWorkerId/$', views.getWorkerId),
+    url(r'^resetPwdWork/$', views.resetPwdWork),
+
+
+
 ]

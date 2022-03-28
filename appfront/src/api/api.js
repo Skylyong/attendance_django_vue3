@@ -75,5 +75,15 @@ export const getOverTimeUserData = (getid) => {
 } 
 
 export const resetPwd = (new_key, userId) => {
-     return post('/resetPwd/', { 'new_key': new_key, 'userId':userId })   
+     return post('/resetPwd/', { 'new_key': new_key, 'userId':userId})   
+} 
+
+
+export const getWorkerId = (userId) => {
+     return post('/getWorkerId/', {'userId':userId })   
+} 
+
+
+export const resetPwdWork = (new_key, userId, old_key) => {
+     return post('/resetPwdWork/', { 'new_key': new_key, 'userId':userId , 'old_key': old_key})   
 } 

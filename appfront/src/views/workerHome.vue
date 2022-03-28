@@ -5,7 +5,7 @@
     <a-layout-sider
       :style="{
         overflow: 'auto',
-        height: '18vh',
+        height: '24vh',
         position: 'fixed',
         left: 0,
         theme: 'dark',
@@ -25,6 +25,10 @@
         <a-menu-item key="3">
           <bar-chart-outlined />
           <span class="nav-text" v-on:click="applyHistory">申请历史</span>
+        </a-menu-item>
+        <a-menu-item key="4">
+          <bar-chart-outlined />
+          <span class="nav-text" v-on:click="accountManager">更改密码</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
@@ -91,12 +95,17 @@ export default defineComponent({
       router.push({ path: "/worker/timePool" });
     };
 
+    let accountManager = () => {
+      router.push({ path: "/worker/workerAccountChange" });
+    }
+
     return {
       selectedKeys: ref(["2"]),
       clickAccount,
       apply,
       applyHistory,
       timePool,
+      accountManager,
     };
   },
 });

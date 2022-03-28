@@ -44,12 +44,14 @@ conn.commit()
 c.execute('''CREATE TABLE IF NOT EXISTS RestPoolTab
        (userId VARCHAR(20) REFERENCES LoginMessage(userId) unique,
        HolidayTotal int not null DEFAULT 0 ,
+       lastYearRemainderDay int not null DEFAULT 0 ,
+       lastYearRemainderTime FLOAT not null DEFAULT 0 ,
        HolidayRemainderDay int not null DEFAULT 0,
-       HolidayRemainderTime int not null DEFAULT 0,
+       HolidayRemainderTime FLOAT not null DEFAULT 0,
        costDay int not null DEFAULT 0,
-       costTime int not null DEFAULT 0,
+       costTime FLOAT not null DEFAULT 0,
        restPoolTotalDay int not null DEFAULT 0,
-       restPoolTotalTime int not null DEFAULT 0);''')
+       restPoolTotalTime FLOAT not null DEFAULT 0);''')
 conn.commit()
 
 # 创建加班统计表
@@ -58,7 +60,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS OverTimeTab
        userId VARCHAR(20) REFERENCES LoginMessage(userId),
        endYearMonth VARCHAR(20) not null ,
        ODay int not null DEFAULT 0,
-       OTime int not null DEFAULT 0);''')
+       OTime FLOAT not null DEFAULT 0);''')
 conn.commit()
 
 print("数据表创建成功")
@@ -67,6 +69,9 @@ print("数据表创建成功")
 # cursor = c.execute("select * from user")
 # for row in cursor:
 #     print (row)
+
+
+# 初始化数据库数据
 
 def getMd5(string):
     m1 = hashlib.md5()

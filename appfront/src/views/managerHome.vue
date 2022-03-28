@@ -28,6 +28,10 @@
           <bar-chart-outlined />
           <span class="nav-text" v-on:click="workerManager">加班费汇总</span>
         </a-menu-item>
+        <a-menu-item key="4">
+          <bar-chart-outlined />
+          <span class="nav-text" v-on:click="managerAccount">修改密码</span>
+        </a-menu-item>
       </a-menu>
     </a-layout-sider>
 
@@ -89,6 +93,9 @@ export default defineComponent({
     let workerManager = () => {
       router.push({ path: "/manager/overtimeStatistics" });
     };
+    let managerAccount=() =>{
+      router.push({ path: "/manager/workerAccountManager" });
+    };
 
     return {
       get_no_history_count,
@@ -96,6 +103,7 @@ export default defineComponent({
       applyApproval,
       viewTimePool,
       workerManager,
+      managerAccount,
     };
   },
 });

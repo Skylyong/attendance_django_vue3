@@ -39,7 +39,7 @@ history_dic_key_list = ['id', 'userId', 'applyTime', 'applyStartTime', 'applyEnd
 
 pool_dic_key_list = ['userId', 'HolidayTotal', 'HolidayRemainderDay', 'HolidayRemainderTime',
                      'costDay', 'costTime', 'restPoolTotalDay',
-                     'restPoolTotalTime',  'name']
+                     'restPoolTotalTime',  'name', 'lastYearRemainderDay', 'lastYearRemainderTime']
 over_time_dic_key_list = ['id', 'userId', 'endYearMonth','ODay','OTime','name']
 isHolidayD = {
     0: '否',
@@ -100,7 +100,9 @@ def get_worker_pool(all, user_id=''):
                      r.costTime,
                      r.restPoolTotalDay,
                      r.restPoolTotalTime,
-                     w.name 
+                     w.name,
+                     r.lastYearRemainderDay,
+                     r.lastYearRemainderTime
               FROM   RestPoolTab r
               JOIN   WorkerMessage w 
               ON     w.userid=r.userid
@@ -141,6 +143,8 @@ def simplify_dic(pool):
         pool['costDay'], pool['costTime'])
     pool['restPoolTotal'] = "{}天{}时".format(
         pool['restPoolTotalDay'],  pool['restPoolTotalTime'])
+    pool['lastYearRemainder'] = "{}天{}时".format(
+        pool['lastYearRemainderDay'], pool['lastYearRemainderTime'])
     # pool['barterAccumulateHoliday'] = "{}天{}时".format(
     #     pool['barterAccumulateHolidayDays'], pool['barterAccumulateHolidayTime'])
     # pool['restPoolTotal'] = "{}天{}时".format(
@@ -232,11 +236,11 @@ def string2day_hour(applyTimeLast):
         day, other = applyTimeLast.split('天')
         hour = other.split('时')[0]
         day = int(day)
-        hour = int(hour)
+        hour = float(hour)
     elif '时' in applyTimeLast and '天' not in applyTimeLast:
         day = 0
         hour = applyTimeLast.split('时')[0]
-        hour = int(hour)
+        hour = float(hour)
     else:
         hour = 0
         day = applyTimeLast.split('天')[0]
@@ -668,5 +672,58 @@ def resetPwd(request):
             cursor.execute(cmd)
         response = set_response(1, 'success')
     except:
+        response = set_response(0, 'failed')
+    return JsonResponse(response)
+
+def getWorkerId(request):
+    param = request.POST
+    user_id = param['userId']
+    if get_user_type(user_id) == 2:
+        with connection.cursor() as cursor:
+            cmd = "select name from  LoginMessage"
+            cursor.execute(cmd)
+            results = cursor.fetchall()
+            userids = []
+            for r in results:
+                userids.append({'label': r[0], 'value':r[0]})
+        response = set_response(1, 'success', data=userids)
+    else:
+        response = set_response(0, 'failed')
+    return JsonResponse(response)
+
+
+def iskeyOk(user_id, key):
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT  key from  LoginMessage WHERE userid = %s", [user_id])
+        res = cursor.fetchall()
+        # print (res)
+        if len(res) == 0:
+            return  False # 没有获取到用户信息
+        else:
+            if res[0][0] == key:
+                return True
+            else:
+                return  False
+
+
+def resetPwdWork(request):
+    param = request.POST
+    new_key = param['new_key']
+    userId =  param['userId']
+    old_key =  param['old_key']
+    new_key = decrypt_data(new_key)
+    old_key = decrypt_data(old_key)
+    if (iskeyOk(userId, old_key)):
+        try:
+            with connection.cursor() as cursor:
+                cmd = "update LoginMessage set KEY=\'{}\' \
+                       where userId=\'{}\'".format(new_key, userId)
+                cursor.execute(cmd)
+            response = set_response(1, 'success')
+        except:
+            response = set_response(0, 'failed')
+    else:
         response = set_response(0, 'failed')
     return JsonResponse(response)
