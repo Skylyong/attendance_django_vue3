@@ -55,7 +55,8 @@ conversionTypeD = {
 approveStateD = {
     3: '未审批',
     2: '通过',
-    1: '驳回'
+    1: '驳回',
+    0: '作废'
 }
 
 applyTypeD ={
@@ -325,6 +326,101 @@ def get_dic_result_with_database(cmd =None, database_name='', columns='', condit
             temp[columns[idx]] = r
         res.append(temp)
     return res
+
+def cancel_from_Pool_add(userId, applyTimeLast):
+    '''
+    撤回累加积休数据，本年度积休减， 休息池减
+    '''
+    day, hour = string2day_hour(applyTimeLast)
+    result = get_dic_result_with_database(database_name='RestPoolTab', columns=['HolidayRemainderDay', \
+                                                                                'HolidayRemainderTime', 'restPoolTotalDay',
+                                                                                'restPoolTotalTime'],
+                                          condition={'userId': userId})
+    result = result[0]
+    HolidayRemainderTime = result['HolidayRemainderTime'] - hour
+    t_day = 0
+    if HolidayRemainderTime < 0:
+        HolidayRemainderTime += 8
+        t_day = 1
+
+    HolidayRemainderDay = result['HolidayRemainderDay'] - day - t_day
+    restPoolTotalTime = result['restPoolTotalTime'] - hour
+    t_day = 0
+    if restPoolTotalTime < 0:
+        restPoolTotalTime = restPoolTotalTime + 8
+        t_day = 1
+    restPoolTotalDay = result['restPoolTotalDay'] - t_day - day
+
+    cmd = "update RestPoolTab set HolidayRemainderDay={}\
+                                        , HolidayRemainderTime={} \
+                                        ,  restPoolTotalTime={} \
+                                        , restPoolTotalDay={} \
+                                        where userId=\'{}\'".format(HolidayRemainderDay, HolidayRemainderTime, \
+                                                                    restPoolTotalTime, restPoolTotalDay, userId)
+    with connection.cursor() as cursor:
+        cursor.execute(cmd)
+
+
+
+def cancel_from_Pool_holiday(userId, applyTimeLast):
+    '''
+    撤回请假数据，请假天数减去， 休息池加
+    '''
+    day, hour = string2day_hour(applyTimeLast)
+    result = get_dic_result_with_database(database_name='RestPoolTab', columns=['costDay', \
+                                                                                'costTime', 'restPoolTotalDay',
+                                                                                'restPoolTotalTime'],
+                                          condition={'userId': userId})
+    result = result[0]
+    costTime = result['costTime'] - hour
+    t_day = 0
+    if costTime < 0:
+        costTime += 8
+        t_day = 1
+    costDay = result['costDay'] - day - t_day
+
+    t_day = 0
+    restPoolTotalTime = result['restPoolTotalTime'] + hour
+    t_day = restPoolTotalTime // 8
+    restPoolTotalTime = restPoolTotalTime % 8
+
+    restPoolTotalDay = result['restPoolTotalDay'] + t_day + day
+
+    cmd = "update RestPoolTab set costDay={}\
+                                        , costTime={} \
+                                        ,  restPoolTotalTime={} \
+                                        , restPoolTotalDay={} \
+                                        where userId=\'{}\'".format(costDay, costTime, \
+                                                                    restPoolTotalTime, restPoolTotalDay, userId)
+    with connection.cursor() as cursor:
+        cursor.execute(cmd)
+
+
+
+
+def cancel_from_OverTimeTab(userid, applyEndTime, applyTimeLast):
+    day, hour = string2day_hour(applyTimeLast)
+    yearmonth = applyEndTime.split('-')
+    yearmonth = '-'.join(yearmonth[0:2])
+    cmd = "select ODay, OTime from OverTimeTab where userid=\'{}\' and endYearMonth=\'{}\'".format(userid, yearmonth)
+    result = get_dic_result_with_database(cmd=cmd, columns=['ODay', 'OTime'])
+    if len(result) == 0:
+        return False
+    else:
+        result = result[0]
+        OTime = result['OTime']  - hour
+        t_day = 0
+        if OTime < 0:
+            OTime += 8
+            t_day = 1
+        ODay = result['ODay'] - day - t_day
+        cmd = "update OverTimeTab set ODay={}\
+                                        , OTime={} \
+                                        where userId=\'{}\' and endYearMonth=\'{}\' ".format(ODay,OTime, userid, yearmonth)
+        with connection.cursor() as cursor:
+            cursor.execute(cmd)
+        return True
+
 
 def add2OverTimeTab(userid, applyEndTime, applyTimeLast):
     day, hour = string2day_hour(applyTimeLast)
@@ -678,6 +774,7 @@ def resetPwd(request):
 def getWorkerId(request):
     param = request.POST
     user_id = param['userId']
+    white_name = ['root', 'test', 'test01']
     if get_user_type(user_id) == 2:
         with connection.cursor() as cursor:
             cmd = "select name from  LoginMessage"
@@ -685,7 +782,8 @@ def getWorkerId(request):
             results = cursor.fetchall()
             userids = []
             for r in results:
-                userids.append({'label': r[0], 'value':r[0]})
+                if r[0] not in white_name:
+                    userids.append({'label': r[0], 'value':r[0]})
         response = set_response(1, 'success', data=userids)
     else:
         response = set_response(0, 'failed')
@@ -727,3 +825,49 @@ def resetPwdWork(request):
     else:
         response = set_response(0, 'failed')
     return JsonResponse(response)
+
+def cancellation(request):
+    param = request.POST
+    userId = param['userId']
+    id =  param['id']
+
+    if get_user_type(userId) == 2:
+        cmd = '''SELECT a.id , a.userId, a.applyTime, 
+                            a.applyStartTime, a.applyEndTime, a.applyType,
+                            a.conversionType,a.approveState, a.applyReason, 
+                            a.applyTimeLast, w.name,a.approveNote, a.isHoliday 
+                     FROM   ApplyHistory a 
+                     JOIN   WorkerMessage w 
+                     ON     w.userid=a.userid'''
+        cmd += " WHERE a.id = \'{}\'".format(id)
+        history = get_multi_recored_with_cmd(cmd)
+        history_dic = database2dic(history, history_dic_key_list)
+        history_dic = history_dic[0]
+        if history_dic['approveState'] == 2:
+            if history_dic['applyType'] == '请假': #撤回的是请假
+                cancel_from_Pool_holiday(history_dic['userId'], history_dic['applyTimeLast'])
+            elif history_dic['applyType'] == '加班': # 撤回的是加班
+                if history_dic['conversionType']:
+                    cancel_from_OverTimeTab(history_dic['userId'], history_dic['applyEndTime'], history_dic['applyTimeLast'])
+                else:
+                    cancel_from_Pool_add(history_dic['userId'], history_dic['applyTimeLast'])
+            else: # 撤回的是值班
+                if history_dic['isHoliday']:
+                    cancel_from_OverTimeTab(history_dic['userId'], history_dic['applyEndTime'], history_dic['applyTimeLast'])
+                else:
+                    cancel_from_Pool_add(history_dic['userId'], history_dic['applyTimeLast'])
+
+        cmd = "update ApplyHistory set approveState=0  \
+               where id = \'{}\' and userid = \'{}\'".format(id, history_dic['userId'])
+        with connection.cursor() as cursor:
+            cursor.execute(cmd)
+        worker_apply_history = get_worker_history_from_database(all=True)
+        worker_pools = get_worker_pool(all=True)
+        data = combine_history_and_pools(
+            worker_apply_history, worker_pools)
+        response = set_response(1, 'success', data)
+    else:
+        response = set_response(0, 'filed')
+
+    return JsonResponse(response)
+

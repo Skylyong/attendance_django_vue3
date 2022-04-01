@@ -159,6 +159,7 @@ export default defineComponent({
           console.log(response);
           if (response["code"] == 1) {
             localStorage.setItem("Userid", response["data"]["userId"]);
+            localStorage.setItem("name", response["data"]["name"]);
             localStorage.setItem("Flag", "isLogin");
             localStorage.setItem("userType", response["data"]["accountType"]);
             store.dispatch("setUser", true);
@@ -203,14 +204,14 @@ export default defineComponent({
 
     const handleOk = () => {
       if (formState.key1 != "12345678" && formState.key1 == formState.key2) {
-        let userid = localStorage.getItem("Userid");
+        let name = localStorage.getItem("name");
 
         formState.key1 = md5(formState.key1);
         formState.key1 = getCode(formState.key1);
         formState.key2 = md5(formState.key2);
         formState.key2 = getCode(formState.key2);
 
-        resetPwd(formState.key1, userid).then(
+        resetPwd(formState.key1, name).then(
           (response) => {
             if (response["code"] == 1) {
               message.success("重置密码成功");

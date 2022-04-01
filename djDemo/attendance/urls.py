@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^resetPwd/$', views.resetPwd),
     url(r'^getWorkerId/$', views.getWorkerId),
     url(r'^resetPwdWork/$', views.resetPwdWork),
+    url(r'^cancellation/$', views.cancellation),
 
 
 

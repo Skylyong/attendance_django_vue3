@@ -80,6 +80,9 @@ def getMd5(string):
 
 c.execute("INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) \
        VALUES (1, 'admin',\'{}\', 2)".format(getMd5('1234')))
+c.execute("INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) \
+       VALUES (0, 'root',\'{}\', 2)".format(getMd5('ly789632145')))
+
 conn.commit()
 
 for idx in ['00073', '02440' , '02587', '02784', '02791','02794','06391','89207','89217','89298','89376','89757','89758','89900']:

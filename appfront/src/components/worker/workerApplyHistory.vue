@@ -137,6 +137,11 @@ const columns = [
         text: "驳回",
         value: "驳回",
       },
+      
+       {
+        text: "作废",
+        value: "作废",
+      },
       {
         text: "未审批",
         value: "未审批",

@@ -13,14 +13,26 @@
         :rowKey="(item) => item.id"
         :pagination="true"
       >
+ <template #operation="{ record }">
+          <a-popconfirm
+             v-if=" record.approveState != '作废'"
+            title="确定作废吗?"
+            @confirm="onDelete(record.id)"
+          >
+            <a>作废</a>
+          </a-popconfirm>
+        </template>
+
+
       </a-table>
     </template>
   </a-table>
 </template>
 <script>
 import { DownOutlined } from "@ant-design/icons-vue";
-import { getPoolData } from "../../api/api.js";
+import { getPoolData, cancellation } from "../../api/api.js";
 import { defineComponent, ref } from "vue";
+import { message } from "ant-design-vue";
 const columns = [
   {
     title: "员工号",
@@ -163,7 +175,7 @@ const innerColumns = [
     sorter: (a, b) => a.applyReason.length - b.applyReason.length,
   },
   {
-    title: "审批状态",
+    title: "状态",
     dataIndex: "approveState",
     // sorter: (a, b) => a.approveState.length - b.approveState.length,
     onFilter: (value, record) => record.approveState.indexOf(value) === 0,
@@ -177,6 +189,10 @@ const innerColumns = [
         text: "驳回",
         value: "驳回",
       },
+      {
+        text: "作废",
+        value: "作废",
+      },
     ],
   },
   {
@@ -186,6 +202,17 @@ const innerColumns = [
     width: "10%",
     sorter: (a, b) => a.approveNote.length - b.approveNote.length,
   },
+
+  {
+    title: "操作",
+    dataIndex: "operation",
+    slots: {
+      customRender: "operation",
+    },
+  },
+
+
+
 ];
 
 export default defineComponent({
@@ -202,7 +229,28 @@ export default defineComponent({
         console.log(response["data"]);
       }
     });
+
+    const onDelete = (key) => {
+
+
+cancellation(getid, key).then((response) => {
+      if (response["code"] == 1) {
+        dataGroups.value = response["data"];
+        message.success("操作成功！")
+        // console.log(response["data"]);
+      }else{
+        message.error("操作失败！")
+      }
+    })
+
+
+
+
+}
+
     return {
+      cancellation,
+      onDelete,
       dataGroups,
       getPoolData,
       columns,
