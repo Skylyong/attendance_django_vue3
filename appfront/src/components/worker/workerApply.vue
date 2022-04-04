@@ -31,18 +31,28 @@
       <template v-if="formState.user.applyType == '值班'">
         <a-form-item label="值班日期">
           <a-date-picker
-            @ok="onRangeOk"
             @change="onRangeChange"
             v-model:value="formState.user.applyDate"
           />
         </a-form-item>
-        <a-form-item label="是否节假  " @click="info">
+
+<a-form-item label="是否休息日  " @click="isWorkerDayClick">
+          <a-radio-group
+            v-model:value="formState.user.isWorkerDay"
+            style="margin-right: auto"
+          >
+            <a-radio :value="1">是</a-radio>
+            <a-radio :value="0">否</a-radio>
+          </a-radio-group>
+        </a-form-item>
+
+        <a-form-item label="是否节假日  " @click="info">
           <a-radio-group
             v-model:value="formState.user.isHoliday"
             style="margin-right: auto"
           >
-            <a-radio :style="radioStyle" :value="1">是</a-radio>
-            <a-radio :style="radioStyle" :value="0">否</a-radio>
+            <a-radio :value="1">是</a-radio>
+            <a-radio :value="0">否</a-radio>
           </a-radio-group>
         </a-form-item>
 
@@ -62,23 +72,38 @@
       <template v-else-if="formState.user.applyType == '加班'">
         <a-form-item label="换算类型">
           <a-radio-group v-model:value="formState.user.conversionType">
-            <a-radio :style="radioStyle" :value="0">累加积休</a-radio>
-            <a-radio :style="radioStyle" :value="1">加班费</a-radio>
+            <a-radio :value="0">累加积休</a-radio>
+            <a-radio :value="1">加班费</a-radio>
           </a-radio-group>
         </a-form-item>
         <a-form-item label="加班日期">
-          <a-range-picker
-            style="width: 225px"
-            @ok = onRangeOk
-            @change="onRangeChange"
-            :placeholder="['开始时间', '结束时间']"
-            :disabled-time="disabledRangeTime"
-            :show-time="{
-              format:'HH:mm',
-              hideDisabledOptions: true,
-            }"
-            format="YYYY-MM-DD HH:mm"
-          />
+          <a-space direction="vertical" style="width: 200px">
+            <a-date-picker
+              :disabled-time="disabledRangeTime"
+              :show-time="{
+                format: 'HH:mm',
+                hideDisabledOptions: true,
+              }"
+              format="YYYY-MM-DD HH:mm"
+              placeholder="Start"
+              @openChange="handleStartOpenChange"
+              @ok="onRangeOkStart"
+              @change = "onRangeChangeStart"
+            />
+            <a-date-picker
+              :disabled-time="disabledRangeTime"
+              :show-time="{
+                format: 'HH:mm',
+                hideDisabledOptions: true,
+              }"
+              format="YYYY-MM-DD HH:mm"
+              placeholder="End"
+              :open="endOpen"
+              @openChange="handleEndOpenChange"
+              @ok="onRangeOkEnd"
+               @change = "onRangeChangeEnd"
+            />
+          </a-space>
         </a-form-item>
 
         <a-form-item label="加班时长">
@@ -94,20 +119,52 @@
         </a-form-item>
       </template>
       <template v-else>
-        <a-form-item label="请假时间">
-         <a-range-picker
+        <!-- <a-form-item label="请假时间">
+          <a-range-picker
             style="width: 225px"
-            @ok = onRangeOk
+            @ok="onRangeOk"
             @change="onRangeChange"
             :placeholder="['开始时间', '结束时间']"
             :disabled-time="disabledRangeTime"
             :show-time="{
-              format:'HH:mm',
+              format: 'HH:mm',
               hideDisabledOptions: true,
             }"
             format="YYYY-MM-DD HH:mm"
           />
+        </a-form-item> -->
+
+<a-form-item label="请假日期">
+          <a-space direction="vertical" style="width: 200px">
+            <a-date-picker
+              :disabled-time="disabledRangeTime"
+              :show-time="{
+                format: 'HH:mm',
+                hideDisabledOptions: true,
+              }"
+              format="YYYY-MM-DD HH:mm"
+              placeholder="Start"
+              @openChange="handleStartOpenChange"
+              @ok="onRangeOkStart"
+              @change = "onRangeChangeStart"
+            />
+            <a-date-picker
+              :disabled-time="disabledRangeTime"
+              :show-time="{
+                format: 'HH:mm',
+                hideDisabledOptions: true,
+              }"
+              format="YYYY-MM-DD HH:mm"
+              placeholder="End"
+              :open="endOpen"
+              @openChange="handleEndOpenChange"
+              @ok="onRangeOkEnd"
+               @change = "onRangeChangeEnd"
+            />
+          </a-space>
         </a-form-item>
+
+
         <a-form-item label="请假时长">
           <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
         </a-form-item>
@@ -133,6 +190,7 @@ import { message } from "ant-design-vue";
 import { defineComponent, ref, reactive } from "vue";
 import moment from "moment";
 import { workerApply } from "../../api/api.js";
+import { values } from "lodash";
 
 export default defineComponent({
   setup() {
@@ -141,9 +199,11 @@ export default defineComponent({
         applyTimeLast: "",
         applyReason: "",
         applyType: "值班",
-        applyDate: "",
+        applyDate: ref(),
+        applyDateEnd:"",
         isHoliday: 0,
         conversionType: 1,
+        isWorkerDay: 0,
       },
     });
     const options_apply_type = ref([
@@ -160,43 +220,46 @@ export default defineComponent({
         label: "请假",
       },
     ]);
-    let dataString = ref();
+
+
+
+
+
+    let dataStringStart = ref();
+    let dataStringEnd = ref();
+
     const onRangeChange = (value, dateString) => {
-      dataString = dateString;
-      if (formState.user.applyType == "值班") {
-        let week = moment(value).day();
-        if (week == 0 || week == 6) {
-          formState.user.applyTimeLast = "1天4时";
-        } else {
+      dataStringStart = dateString;
+      dataStringEnd = dateString;
+      formState.user.applyTimeLast = "4时";
+      // if (formState.user.applyType == "值班") {
+      //   let week = moment(value).day();
+      //   if (week == 0 || week == 6) {
+      //     formState.user.applyTimeLast = "1天4时";
+      //   } else {
+      //     formState.user.applyTimeLast = "4时";
+      //   }
+      // }
+    };
+
+    const isWorkerDayClick = (value) =>{
+       if (formState.user.applyType == "值班") {
+
+        if (formState.user.isWorkerDay) {
           formState.user.applyTimeLast = "4时";
+        } else {
+          formState.user.applyTimeLast = "1天4时";
         }
       }
-    };
-
-    const onRangeOk = (value) => {
-      // console.log(value);
-      var hour = moment(value[1]).diff(moment(value[0]), "hour");
-      var day = moment(value[1]).diff(moment(value[0]), "day");
-      var minutes = moment(value[1]).diff(moment(value[0]), "minutes");
-      minutes = minutes - hour*60;
-      hour = hour - day * 24;
-      hour = hour + minutes/60
-      console.log(hour);
-      if (hour >= 8) {
-        hour = 8;
-      }
-
-      formState.user.applyTimeLast =
-        day.toString() + "天" + hour.toString() + "时";
-    };
+    }
 
     const applyTypeChange = (value) => {
       formState.user.applyTimeLast = "";
       formState.user.applyReason = "";
     };
-
+const dataJson = {};
     const onFinish = (value) => {
-      const dataJson = {};
+      
       if (formState.user.applyTimeLast != "") {
         if (
           formState.user.conversionType == 0 &&
@@ -206,7 +269,7 @@ export default defineComponent({
         } else {
           if (formState.user.applyType == "值班") {
             dataJson["applyType"] = formState.user.applyType;
-            dataJson["applyDate"] = formState.user.applyDate;
+            // dataJson["applyDate"] = formState.user.applyDate;
             dataJson["isHoliday"] = formState.user.isHoliday;
             dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
@@ -214,13 +277,13 @@ export default defineComponent({
           } else if (formState.user.applyType == "加班") {
             dataJson["applyType"] = formState.user.applyType;
             dataJson["conversionType"] = formState.user.conversionType;
-            dataJson["applyDate"] = formState.user.applyDate;
+            // dataJson["applyDate"] = formState.user.applyDate;
             dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
             dataJson["isHoliday"] = 2;
           } else {
             dataJson["applyType"] = formState.user.applyType;
-            dataJson["applyDate"] = formState.user.applyDate;
+            // dataJson["applyDate"] = formState.user.applyDate;
             dataJson["applyTimeLast"] = formState.user.applyTimeLast;
             dataJson["applyReason"] = formState.user.applyReason;
             dataJson["conversionType"] = 2;
@@ -228,7 +291,7 @@ export default defineComponent({
           }
 
           let userid = localStorage.getItem("Userid");
-          workerApply(userid, dataJson, dataString).then(
+          workerApply(userid, dataJson, dataStringStart, dataStringEnd).then(
             (response) => {
               if (response["code"] == 1) {
                 message.success("提交成功");
@@ -272,24 +335,96 @@ export default defineComponent({
       return result;
     };
 
+    let endOpen = ref(false);
+
+    const handleStartOpenChange = (open) => {
+      if (!open) {
+        endOpen.value = true;
+      }
+    };
+    const handleEndOpenChange = (open) => {
+      endOpen.value = open;
+    };
 
     const disabledRangeTime = () => {
       {
         return {
           disabledHours: () => range(8, 18, "hour"),
           disabledMinutes: () => range(15, 60, "minute"),
-          disabledSeconds: () => [55,56],
+          disabledSeconds: () => [55, 56],
         };
       }
     };
 
+    var startOk = false;
+    var startValue, endValue;
+  
+    const onRangeOkStart = (value) => {
+      startOk = true;
+      startValue = value;
+    };
+    
+    const onRangeOkEnd = (value) => {
+      if (! startOk){
+        message.error("请先选择开始日期")
+      }else{
+
+      var stime =new Date(dataStringStart).getTime();
+      var etime = new Date(dataStringEnd).getTime();
+      var usedTime = etime - stime;  //两个时间戳相差的毫秒数
+      if (usedTime < 0){
+        message.error("结束日期必须在开始日期之后")
+      }else{
+      var days=Math.floor(usedTime/(24*3600*1000));
+      //计算出小时数
+      var leave1=usedTime%(24*3600*1000);    //计算天数后剩余的毫秒数
+      var hours=Math.floor(leave1/(3600*1000));
+      //计算相差分钟数
+      var leave2=leave1%(3600*1000);        //计算小时数后剩余的毫秒数
+      var minutes=Math.floor(leave2/(60*1000));
+      // var time = days + "天"+hours+"时"+minutes+"分";
+      hours = hours + minutes / 60;
+      if(hours >= 8)
+      {
+        hours = 8;
+      }
+
+      formState.user.applyTimeLast =
+        days.toString() + "天" + hours.toString() + "时";
+       
+      }}
+    };
+
+const onRangeChangeEnd=(value, dateString) =>{
+  
+  dataStringEnd = dateString
+}
+
+const onRangeChangeStart=(value, dateString) =>{
+  
+  dataStringStart = dateString
+}
+
+
+
+
+
+
     return {
+      isWorkerDayClick,
+      onRangeChangeStart,
+      onRangeChangeEnd,
+      onRangeOkStart,
+      onRangeOkEnd,
+      handleStartOpenChange,
+      handleEndOpenChange,
+      endOpen,
       disabledRangeTime,
-      dataString,
+      dataStringStart,
+      dataStringEnd,
       onFinish,
       applyTypeChange,
       onRangeChange,
-      onRangeOk,
       formState,
       options_apply_type,
       dayjs,

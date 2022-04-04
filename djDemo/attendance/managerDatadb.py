@@ -89,6 +89,7 @@ for idx in ['00073', '02440' , '02587', '02784', '02791','02794','06391','89207'
     cmd = "INSERT INTO LoginMessage (userId, NAME, KEY, accountType ) VALUES (\'{}\', \'{}\', \'{}\', 1)".format(
         idx, idx, getMd5('1234'))
     c.execute(cmd)
+
 conn.commit()
 
 for item in [('00073', '沈*伟'), ('02440', '袁*'), ('02587', '曹*'),\

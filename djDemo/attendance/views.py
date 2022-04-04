@@ -525,10 +525,8 @@ def submitApplication(request):
     applyReason = param['applyReason']
     isHoliday = param['isHoliday']
     conversionType = param['conversionType']
-    if applyType == '值班':
-        applyStartTime, applyEndTime = param['applyDate'], param['applyDate']
-    else:
-        applyStartTime, applyEndTime = param['applyDate[0]'], param['applyDate[1]']
+    applyStartTime, applyEndTime = param['applyDateStart'], param['applyDateEnd']
+
     approveState = 3
     applyTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     try:
@@ -870,4 +868,3 @@ def cancellation(request):
         response = set_response(0, 'filed')
 
     return JsonResponse(response)
-

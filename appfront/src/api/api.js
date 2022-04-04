@@ -16,7 +16,7 @@ export const postSubmit = (username, password) => {
 // }
 
 
-export const workerApply = (userId, data, dataString) => {
+export const workerApply = (userId, data, dataStringStart, dataStringEnd) => {
      return post('/submitApplication/', {
           'userid':userId,
           'applyType':data['applyType'], 
@@ -24,7 +24,8 @@ export const workerApply = (userId, data, dataString) => {
           'applyReason':data['applyReason'],  
           'isHoliday': data['isHoliday'],
           'conversionType': data['conversionType'],
-          'applyDate': dataString,
+          'applyDateStart': dataStringStart,
+          'applyDateEnd': dataStringEnd,
      })
 }
 
@@ -74,8 +75,8 @@ export const getOverTimeUserData = (getid) => {
      return post('/getOverTimeUserData/', { 'userId': getid })   
 } 
 
-export const resetPwd = (new_key, userId) => {
-     return post('/resetPwd/', { 'new_key': new_key, 'userId':userId})   
+export const resetPwd = (new_key, name) => {
+     return post('/resetPwd/', { 'new_key': new_key, 'userId':name})   
 } 
 
 
@@ -86,4 +87,9 @@ export const getWorkerId = (userId) => {
 
 export const resetPwdWork = (new_key, userId, old_key) => {
      return post('/resetPwdWork/', { 'new_key': new_key, 'userId':userId , 'old_key': old_key})   
+} 
+
+
+export const cancellation = (userId, id ) => {
+     return post('/cancellation/', { 'userId':userId , 'id': id})   
 } 
