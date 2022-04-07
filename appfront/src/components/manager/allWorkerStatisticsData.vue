@@ -13,7 +13,7 @@
         :rowKey="(item) => item.id"
         :pagination="true"
       >
- <template #operation="{ record }">
+ <!-- <template #operation="{ record }">
           <a-popconfirm
              v-if=" record.approveState != '作废'"
             title="确定作废吗?"
@@ -21,7 +21,7 @@
           >
             <a>作废</a>
           </a-popconfirm>
-        </template>
+        </template> -->
 
 
       </a-table>
@@ -30,7 +30,7 @@
 </template>
 <script>
 import { DownOutlined } from "@ant-design/icons-vue";
-import { getPoolData, cancellation } from "../../api/api.js";
+import { getPoolData } from "../../api/api.js";
 import { defineComponent, ref } from "vue";
 import { message } from "ant-design-vue";
 const columns = [
@@ -203,13 +203,13 @@ const innerColumns = [
     sorter: (a, b) => a.approveNote.length - b.approveNote.length,
   },
 
-  {
-    title: "操作",
-    dataIndex: "operation",
-    slots: {
-      customRender: "operation",
-    },
-  },
+  // {
+  //   title: "操作",
+  //   dataIndex: "operation",
+  //   slots: {
+  //     customRender: "operation",
+  //   },
+  // },
 
 
 
@@ -230,27 +230,27 @@ export default defineComponent({
       }
     });
 
-    const onDelete = (key) => {
+    // const onDelete = (key) => {
 
 
-cancellation(getid, key).then((response) => {
-      if (response["code"] == 1) {
-        dataGroups.value = response["data"];
-        message.success("操作成功！")
-        // console.log(response["data"]);
-      }else{
-        message.error("操作失败！")
-      }
-    })
+// cancellation(getid, key).then((response) => {
+//       if (response["code"] == 1) {
+//         dataGroups.value = response["data"];
+//         message.success("操作成功！")
+//         // console.log(response["data"]);
+//       }else{
+//         message.error("操作失败！")
+//       }
+//     })
 
 
 
 
-}
+// }
 
     return {
-      cancellation,
-      onDelete,
+      // cancellation,
+      // onDelete,
       dataGroups,
       getPoolData,
       columns,

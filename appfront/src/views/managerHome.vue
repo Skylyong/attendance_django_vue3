@@ -16,7 +16,7 @@
           <user-outlined />
 
           <span class="nav-text" v-on:click="applyApproval">
-            待审批
+            申请审批
             <a-badge :count="3" dot> </a-badge>
           </span>
         </a-menu-item>

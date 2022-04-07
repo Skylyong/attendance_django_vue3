@@ -27,6 +27,8 @@
         >
         </a-select>
       </a-form-item>
+      <br>
+   
 
       <template v-if="formState.user.applyType == '值班'">
         <a-form-item label="值班日期">
@@ -35,6 +37,7 @@
             v-model:value="formState.user.applyDate"
           />
         </a-form-item>
+         <br>
 
 <a-form-item label="是否休息日  " @click="isWorkerDayClick">
           <a-radio-group
@@ -45,7 +48,7 @@
             <a-radio :value="0">否</a-radio>
           </a-radio-group>
         </a-form-item>
-
+ <br>
         <a-form-item label="是否节假日  " @click="info">
           <a-radio-group
             v-model:value="formState.user.isHoliday"
@@ -55,10 +58,11 @@
             <a-radio :value="0">否</a-radio>
           </a-radio-group>
         </a-form-item>
-
+ <br>
         <a-form-item label="值班时长">
           <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
         </a-form-item>
+         <br>
         <a-form-item label="值班原因">
           <a-textarea
             style="width: 160pt"
@@ -76,6 +80,7 @@
             <a-radio :value="1">加班费</a-radio>
           </a-radio-group>
         </a-form-item>
+         <br>
         <a-form-item label="加班日期">
           <a-space direction="vertical" style="width: 200px">
             <a-date-picker
@@ -105,10 +110,12 @@
             />
           </a-space>
         </a-form-item>
+         <br>
 
         <a-form-item label="加班时长">
           <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
         </a-form-item>
+         <br>
         <a-form-item label="加班原因">
           <a-textarea
             style="width: 160pt"
@@ -163,11 +170,12 @@
             />
           </a-space>
         </a-form-item>
-
+ <br>
 
         <a-form-item label="请假时长">
           <p style="text-align: left">{{ formState.user.applyTimeLast }}</p>
         </a-form-item>
+         <br>
         <a-form-item label="请假原因">
           <a-textarea
             style="width: 160pt"
@@ -196,7 +204,7 @@ export default defineComponent({
   setup() {
     const formState = reactive({
       user: {
-        applyTimeLast: "",
+        applyTimeLast: "4时",
         applyReason: "",
         applyType: "值班",
         applyDate: ref(),
@@ -225,13 +233,13 @@ export default defineComponent({
 
 
 
-    let dataStringStart = ref();
-    let dataStringEnd = ref();
+    let dataStringStart = ref('');
+    let dataStringEnd = ref('');
 
     const onRangeChange = (value, dateString) => {
       dataStringStart = dateString;
       dataStringEnd = dateString;
-      formState.user.applyTimeLast = "4时";
+      // formState.user.applyTimeLast = "";
       // if (formState.user.applyType == "值班") {
       //   let week = moment(value).day();
       //   if (week == 0 || week == 6) {
@@ -256,9 +264,24 @@ export default defineComponent({
     const applyTypeChange = (value) => {
       formState.user.applyTimeLast = "";
       formState.user.applyReason = "";
+      dataStringStart.value = "";
+      if (formState.user.applyType === "值班"){
+        formState.user.applyTimeLast = "4时";
+      }else{
+        formState.user.applyTimeLast = "";
+      }
+      // formState.user.isHoliday = -1;
+      // formState.user.isWorkerDay = -1;
+      // formState.user.conversionType = -1;
     };
 const dataJson = {};
     const onFinish = (value) => {
+        if (formState.user.applyType === "值班" && dataStringStart.value ===''){
+          message.error("请选择值班时间");
+          return;
+        }
+
+
       
       if (formState.user.applyTimeLast != "") {
         if (
@@ -305,7 +328,7 @@ const dataJson = {};
           );
         }
       } else {
-        message.error("数据录入不完整！");
+        message.error("没有值班时长！");
       }
 
       // console.log(dataJson);

@@ -17,15 +17,14 @@ import base64
 
 
 
-
 random_generator = Random.new().read
 rsa = RSA.generate(2048, random_generator)
 # 生成私钥
 private_key = rsa.exportKey()
-print(private_key.decode('utf-8'))
+# print(private_key.decode('utf-8'))
 # 生成公钥
 public_key = rsa.publickey().exportKey()
-print(public_key.decode('utf-8'))
+# print(public_key.decode('utf-8'))
 
 with open('rsa_private_key.pem', 'wb')as f:
     f.write(private_key)
@@ -87,42 +86,43 @@ def get_signal_recored_with_cmd(cmd):
 
 
 def get_user_type(user_id):
-    cmd = '''SELECT accountType 
-             from loginmessage 
-             where userId=''' +'\'' + user_id + '\''
+    cmd = '''SELECT user_account_type 
+             from LoginMessage 
+             where user_id=''' +'\'' + user_id + '\''
     return get_signal_recored_with_cmd(cmd)
 
 
 def get_worker_pool(all, user_id=''):
-    cmd = '''SELECT r.userId, r.HolidayTotal,
+    cmd = '''SELECT r.user_id, r.HolidayTotal,
                      r.HolidayRemainderDay,
                      r.HolidayRemainderTime,
                      r.costDay,
                      r.costTime,
                      r.restPoolTotalDay,
                      r.restPoolTotalTime,
-                     w.name,
+                     w.user_name,
                      r.lastYearRemainderDay,
                      r.lastYearRemainderTime
               FROM   RestPoolTab r
               JOIN   WorkerMessage w 
-              ON     w.userid=r.userid
+              ON     w.user_id=r.user_id
               '''
     if not all:
-        cmd += "where r.userid=\'{}\'".format(user_id)
+        cmd += "where r.user_id=\'{}\'".format(user_id)
+    cmd = cmd.replace('\n', '')
     return get_multi_recored_with_cmd(cmd)
 
 
 def get_worker_history_from_database(all, user_id=''):
-    cmd = '''SELECT a.id , a.userId, a.applyTime, 
+    cmd = '''SELECT a.id , a.user_id, a.applyTime, 
                     a.applyStartTime, a.applyEndTime, a.applyType,
                     a.conversionType,a.approveState, a.applyReason, 
-                    a.applyTimeLast, w.name,a.approveNote, a.isHoliday 
+                    a.applyTimeLast, w.user_name,a.approveNote, a.isHoliday 
              FROM   ApplyHistory a 
              JOIN   WorkerMessage w 
-             ON     w.userid=a.userid'''
+             ON     w.user_id=a.user_id'''
     if not all:
-        cmd += " WHERE  a.userid=\'{}\'".format(user_id)
+        cmd += " WHERE  a.user_id=\'{}\'".format(user_id)
 
     return get_multi_recored_with_cmd(cmd)
 
@@ -219,7 +219,7 @@ def login(request):
         key = decrypt_data(key)
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT name , key, accountType,userId from  LoginMessage WHERE name = %s", [name])
+                "SELECT user_account  , user_key, user_account_type, user_id  from  LoginMessage WHERE user_account = %s", [name])
             res = cursor.fetchall()
             # print (res)
             if len(res) == 0:
@@ -253,7 +253,7 @@ def add2Pool(userId, applyTimeLast):
     if hour > 8: hour=8
     result = get_dic_result_with_database(database_name='RestPoolTab', columns=['HolidayRemainderDay', \
                                                                'HolidayRemainderTime', 'restPoolTotalDay', 'restPoolTotalTime'],
-                                          condition={'userId': userId})
+                                          condition={'user_id': userId})
     result = result[0]
     HolidayRemainderTime = result['HolidayRemainderTime'] + hour
     t_day = HolidayRemainderTime // 8
@@ -269,7 +269,7 @@ def add2Pool(userId, applyTimeLast):
                                     , HolidayRemainderTime={} \
                                     ,  restPoolTotalTime={} \
                                     , restPoolTotalDay={} \
-                                    where userId=\'{}\'".format(HolidayRemainderDay, HolidayRemainderTime, \
+                                    where user_id=\'{}\'".format(HolidayRemainderDay, HolidayRemainderTime, \
                                                             restPoolTotalTime, restPoolTotalDay, userId)
     with connection.cursor() as cursor:
         cursor.execute(cmd)
@@ -277,7 +277,7 @@ def add2Pool(userId, applyTimeLast):
 def minus2Pool(userId, applyTimeLast):
     day, hour = string2day_hour(applyTimeLast)
     result = get_dic_result_with_database(database_name='RestPoolTab', columns=['costDay', \
-                                        'costTime', 'restPoolTotalDay', 'restPoolTotalTime'], condition={'userId': userId})
+                                        'costTime', 'restPoolTotalDay', 'restPoolTotalTime'], condition={'user_id': userId})
     result = result[0]
     costTime = result['costTime'] + hour
     t_day = costTime // 8
@@ -294,7 +294,7 @@ def minus2Pool(userId, applyTimeLast):
                                     , costTime={} \
                                     ,  restPoolTotalTime={} \
                                     , restPoolTotalDay={} \
-                                    where userId=\'{}\'".format(costDay,costTime,\
+                                    where user_id=\'{}\'".format(costDay,costTime,\
                                                             restPoolTotalTime, restPoolTotalDay, userId)
     with connection.cursor() as cursor:
         cursor.execute(cmd)
@@ -311,7 +311,7 @@ def get_dic_result_with_database(cmd =None, database_name='', columns='', condit
         cmd.append('where')
         condition_list = []
         for key, value in condition.items():
-            if key.lower() == 'userid':
+            if key.lower() == 'user_id':
                 condition_list.append(key + '=\'' + value + '\'')
             else:
                 condition_list.append(key + '=' + value)
@@ -335,7 +335,7 @@ def cancel_from_Pool_add(userId, applyTimeLast):
     result = get_dic_result_with_database(database_name='RestPoolTab', columns=['HolidayRemainderDay', \
                                                                                 'HolidayRemainderTime', 'restPoolTotalDay',
                                                                                 'restPoolTotalTime'],
-                                          condition={'userId': userId})
+                                          condition={'user_id': userId})
     result = result[0]
     HolidayRemainderTime = result['HolidayRemainderTime'] - hour
     t_day = 0
@@ -355,7 +355,7 @@ def cancel_from_Pool_add(userId, applyTimeLast):
                                         , HolidayRemainderTime={} \
                                         ,  restPoolTotalTime={} \
                                         , restPoolTotalDay={} \
-                                        where userId=\'{}\'".format(HolidayRemainderDay, HolidayRemainderTime, \
+                                        where user_id=\'{}\'".format(HolidayRemainderDay, HolidayRemainderTime, \
                                                                     restPoolTotalTime, restPoolTotalDay, userId)
     with connection.cursor() as cursor:
         cursor.execute(cmd)
@@ -370,7 +370,7 @@ def cancel_from_Pool_holiday(userId, applyTimeLast):
     result = get_dic_result_with_database(database_name='RestPoolTab', columns=['costDay', \
                                                                                 'costTime', 'restPoolTotalDay',
                                                                                 'restPoolTotalTime'],
-                                          condition={'userId': userId})
+                                          condition={'user_id': userId})
     result = result[0]
     costTime = result['costTime'] - hour
     t_day = 0
@@ -390,7 +390,7 @@ def cancel_from_Pool_holiday(userId, applyTimeLast):
                                         , costTime={} \
                                         ,  restPoolTotalTime={} \
                                         , restPoolTotalDay={} \
-                                        where userId=\'{}\'".format(costDay, costTime, \
+                                        where user_id=\'{}\'".format(costDay, costTime, \
                                                                     restPoolTotalTime, restPoolTotalDay, userId)
     with connection.cursor() as cursor:
         cursor.execute(cmd)
@@ -402,7 +402,7 @@ def cancel_from_OverTimeTab(userid, applyEndTime, applyTimeLast):
     day, hour = string2day_hour(applyTimeLast)
     yearmonth = applyEndTime.split('-')
     yearmonth = '-'.join(yearmonth[0:2])
-    cmd = "select ODay, OTime from OverTimeTab where userid=\'{}\' and endYearMonth=\'{}\'".format(userid, yearmonth)
+    cmd = "select ODay, OTime from OverTimeTab where user_id=\'{}\' and endYearMonth=\'{}\'".format(userid, yearmonth)
     result = get_dic_result_with_database(cmd=cmd, columns=['ODay', 'OTime'])
     if len(result) == 0:
         return False
@@ -416,7 +416,7 @@ def cancel_from_OverTimeTab(userid, applyEndTime, applyTimeLast):
         ODay = result['ODay'] - day - t_day
         cmd = "update OverTimeTab set ODay={}\
                                         , OTime={} \
-                                        where userId=\'{}\' and endYearMonth=\'{}\' ".format(ODay,OTime, userid, yearmonth)
+                                        where user_id=\'{}\' and endYearMonth=\'{}\' ".format(ODay,OTime, userid, yearmonth)
         with connection.cursor() as cursor:
             cursor.execute(cmd)
         return True
@@ -426,10 +426,10 @@ def add2OverTimeTab(userid, applyEndTime, applyTimeLast):
     day, hour = string2day_hour(applyTimeLast)
     yearmonth = applyEndTime.split('-')
     yearmonth = '-'.join(yearmonth[0:2])
-    cmd = "select ODay, OTime from OverTimeTab where userid=\'{}\' and endYearMonth=\'{}\'".format(userid, yearmonth)
+    cmd = "select ODay, OTime from OverTimeTab where user_id=\'{}\' and endYearMonth=\'{}\'".format(userid, yearmonth)
     result = get_dic_result_with_database(cmd=cmd, columns=['ODay', 'OTime'])
     if len(result) == 0:
-        cmd = "INSERT INTO OverTimeTab (userid, endYearMonth, ODay, OTime) VALUES (\'{}\', \'{}\',{}, {})".format(
+        cmd = "INSERT INTO OverTimeTab (user_id, endYearMonth, ODay, OTime) VALUES (\'{}\', \'{}\',{}, {})".format(
         userid, yearmonth, day, hour)
         with connection.cursor() as cursor:
             cursor.execute(cmd)
@@ -441,7 +441,7 @@ def add2OverTimeTab(userid, applyEndTime, applyTimeLast):
         ODay = result['ODay'] + day + t_day
         cmd = "update OverTimeTab set ODay={}\
                                         , OTime={} \
-                                        where userId=\'{}\' and endYearMonth=\'{}\' ".format(ODay,OTime, userid, yearmonth)
+                                        where user_id=\'{}\' and endYearMonth=\'{}\' ".format(ODay,OTime, userid, yearmonth)
         with connection.cursor() as cursor:
             cursor.execute(cmd)
 
@@ -458,13 +458,13 @@ def approvalApplication(request):
     approveState = param['approveState']
     approveNote = param['approveNote']
     result = get_dic_result_with_database(database_name='ApplyHistory', columns = ['applyType', \
-                                        'isHoliday', 'conversionType', 'applyTimeLast', 'userId','applyEndTime'], condition={'id': id})
+                                        'isHoliday', 'conversionType', 'applyTimeLast', 'user_id','applyEndTime'], condition={'id': id})
     result =result[0]
     applyType = result['applyType']
     isHoliday = result['isHoliday']
     conversionType = result['conversionType']
     applyTimeLast = result['applyTimeLast']
-    worker_id = result['userId']
+    worker_id = result['user_id']
     applyEndTime = result['applyEndTime']
     # try:
     if int(approveState) == 2:
@@ -482,10 +482,9 @@ def approvalApplication(request):
             minus2Pool(worker_id, applyTimeLast)
 
     with connection.cursor() as cursor:
-        cmd = 'update ApplyHistory set approveState=' + approveState + \
-            ', approveNote=\"' + approveNote + "\" where id="+id
+        cmd = 'update ApplyHistory set approveState=' + approveState + ', approveNote=\'' + approveNote + "\' where id="+id
         res = cursor.execute(cmd)
-        if res.rowcount > 0:
+        if res > 0:
             response = set_response(1, 'success')
         else:
             response = set_response(0, 'filed')
@@ -498,7 +497,7 @@ def get_no_approve_history_count(request):
     param = request.POST
     userId = param['userId']
     if get_user_type(userId) == 2:
-        cmd = '''SELECT a.id , a.userId, a.applyTime, 
+        cmd = '''SELECT a.id , a.user_id, a.applyTime, 
                             a.applyStartTime, a.applyEndTime, a.applyType,
                             a.holidayType,a.approveState, a.applyReason, 
                             a.applyTimeLast, a.approveNote 
@@ -532,7 +531,7 @@ def submitApplication(request):
     try:
         with connection.cursor() as cursor:
             cursor.execute("INSERT INTO ApplyHistory  \
-                           (userId, applyTime, applyStartTime,conversionType, \
+                           (user_id, applyTime, applyStartTime,conversionType, \
                            applyEndTime,applyType, isHoliday,\
                            approveState, applyReason, applyTimeLast) \
                             VALUES ( %s,%s, %s,%s,%s, %s,%s, %s, %s, %s)", \
@@ -556,10 +555,9 @@ def delApplication(request):
     id = param['id']
     try:
         with connection.cursor() as cursor:
-            cmd = "DELETE FROM ApplyHistory WHERE userId=\'" + userId + '\''+ \
-                " AND id="+id+" AND approveState=3"
+            cmd = "DELETE FROM ApplyHistory WHERE user_id=\'" + userId + '\'' + " AND id="+id+" AND approveState=3"
             res = cursor.execute(cmd)
-            if res.rowcount > 0:
+            if res > 0:
                 response = set_response(1, 'success')
             else:
                 response = set_response(0, 'filed')
@@ -587,11 +585,11 @@ def getApplicationHistory(request):
         if not data_type:
             results_ = []
             for r in results:
-                if r['approveState'] == 3:
-                    r['conversionType'] = conversionTypeD[r['conversionType']]
-                    r['isHoliday'] = isHolidayD[r['isHoliday']]
-                    r['approveState'] = approveStateD[r['approveState']]
-                    results_.append(r)
+                # if r['approveState'] == 3:
+                r['conversionType'] = conversionTypeD[r['conversionType']]
+                r['isHoliday'] = isHolidayD[r['isHoliday']]
+                r['approveState'] = approveStateD[r['approveState']]
+                results_.append(r)
 
             results = results_
     else:
@@ -657,7 +655,7 @@ def getWorkerAccountMessage(request):
         user_id = param['userid']
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT name, manager,userId from  WorkerMessage WHERE userid = %s", [user_id])
+                "SELECT user_name, manager_id, user_id from  WorkerMessage WHERE user_id = %s", [user_id])
             res = cursor.fetchall()
             if len(res) == 0:
                 response = set_response(2004, 'no user message')  # 没有获取到用户信息
@@ -684,27 +682,27 @@ def getUserPoolData(request):
         return JsonResponse(response)
 
 def get_over_time(all, user_id=''):
-    cmd = '''SELECT a.id , a.userId, a.applyTime, 
+    cmd = '''SELECT a.id , a.user_id, a.applyTime, 
                     a.applyStartTime, a.applyEndTime, a.applyType,
                     a.conversionType,a.approveState, a.applyReason, 
-                    a.applyTimeLast, w.name,a.approveNote, a.isHoliday 
+                    a.applyTimeLast, w.user_name,a.approveNote, a.isHoliday 
              FROM   ApplyHistory a 
              JOIN   WorkerMessage w 
-             ON     w.userid=a.userid 
+             ON     w.user_id=a.user_id 
              WHERE  a.approveState = 2 and (a.isHoliday = 1 or a.conversionType = 1)'''
     if not all:
-        cmd += "  a.userid=\'{}\'".format(user_id)
+        cmd += "  a.user_id=\'{}\'".format(user_id)
 
     return get_multi_recored_with_cmd(cmd)
 
 def get_total_over_time(all, user_id=''):
-    cmd = '''SELECT a.id , a.userId, a.endYearMonth, 
-                    a.ODay, a.OTime,  w.name
+    cmd = '''SELECT a.id , a.user_id, a.endYearMonth, 
+                    a.ODay, a.OTime,  w.user_name
              FROM   OverTimeTab a 
              JOIN   WorkerMessage w 
-             ON     w.userid=a.userid '''
+             ON     w.user_id=a.user_id '''
     if not all:
-        cmd += " where a.userid=\'{}\'".format(user_id)
+        cmd += " where a.user_id=\'{}\'".format(user_id)
 
     return get_multi_recored_with_cmd(cmd)
 
@@ -761,8 +759,7 @@ def resetPwd(request):
     new_key = decrypt_data(new_key)
     try:
         with connection.cursor() as cursor:
-            cmd = "update LoginMessage set KEY=\'{}\' \
-                   where name=\'{}\'".format(new_key, name)
+            cmd = "update LoginMessage set user_key=\'{}\' where user_account=\'{}\'".format(new_key, name)
             cursor.execute(cmd)
         response = set_response(1, 'success')
     except:
@@ -775,7 +772,7 @@ def getWorkerId(request):
     white_name = ['root', 'test', 'test01']
     if get_user_type(user_id) == 2:
         with connection.cursor() as cursor:
-            cmd = "select name from  LoginMessage"
+            cmd = "select user_account from  LoginMessage"
             cursor.execute(cmd)
             results = cursor.fetchall()
             userids = []
@@ -792,7 +789,7 @@ def iskeyOk(user_id, key):
 
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT  key from  LoginMessage WHERE userid = %s", [user_id])
+            "SELECT  user_key from  LoginMessage WHERE user_id = %s", [user_id])
         res = cursor.fetchall()
         # print (res)
         if len(res) == 0:
@@ -812,14 +809,13 @@ def resetPwdWork(request):
     new_key = decrypt_data(new_key)
     old_key = decrypt_data(old_key)
     if (iskeyOk(userId, old_key)):
-        try:
-            with connection.cursor() as cursor:
-                cmd = "update LoginMessage set KEY=\'{}\' \
-                       where userId=\'{}\'".format(new_key, userId)
-                cursor.execute(cmd)
-            response = set_response(1, 'success')
-        except:
-            response = set_response(0, 'failed')
+        with connection.cursor() as cursor:
+            cmd = "update LoginMessage set user_key=\'{}\' where user_id=\'{}\'".format(new_key, userId)
+            res = cursor.execute(cmd)
+            if res == 1:
+                response = set_response(1, 'success')
+            else:
+                response = set_response(0, 'failed')
     else:
         response = set_response(0, 'failed')
     return JsonResponse(response)
@@ -830,13 +826,13 @@ def cancellation(request):
     id =  param['id']
 
     if get_user_type(userId) == 2:
-        cmd = '''SELECT a.id , a.userId, a.applyTime, 
+        cmd = '''SELECT a.id , a.user_id, a.applyTime, 
                             a.applyStartTime, a.applyEndTime, a.applyType,
                             a.conversionType,a.approveState, a.applyReason, 
-                            a.applyTimeLast, w.name,a.approveNote, a.isHoliday 
+                            a.applyTimeLast, w.user_name,a.approveNote, a.isHoliday 
                      FROM   ApplyHistory a 
                      JOIN   WorkerMessage w 
-                     ON     w.userid=a.userid'''
+                     ON     w.user_id=a.user_id'''
         cmd += " WHERE a.id = \'{}\'".format(id)
         history = get_multi_recored_with_cmd(cmd)
         history_dic = database2dic(history, history_dic_key_list)
@@ -856,7 +852,7 @@ def cancellation(request):
                     cancel_from_Pool_add(history_dic['userId'], history_dic['applyTimeLast'])
 
         cmd = "update ApplyHistory set approveState=0  \
-               where id = \'{}\' and userid = \'{}\'".format(id, history_dic['userId'])
+               where id = \'{}\' and user_id = \'{}\'".format(id, history_dic['userId'])
         with connection.cursor() as cursor:
             cursor.execute(cmd)
         worker_apply_history = get_worker_history_from_database(all=True)

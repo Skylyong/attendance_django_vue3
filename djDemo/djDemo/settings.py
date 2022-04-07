@@ -15,7 +15,10 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+DATABASE_DIR = Path(__file__).resolve().parent.parent.parent
 STATIC_URL = '/static/'
+
+# print ('DATABASE_DIR', DATABASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -28,7 +31,7 @@ SECRET_KEY = 'django-insecure-eulthvb71+d+=88ih3lrj)w$i6d#nqhdvncoxo474!*mtyl2*^
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['47.103.127.226','127.0.0.1']
 
@@ -83,8 +86,14 @@ WSGI_APPLICATION = 'djDemo.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': DATABASE_DIR / 'db.sqlite3',
+'ENGINE': 'django.db.backends.mysql',
+'NAME': 'attendance',
+'USER': 'root',
+'PASSWORD': '789632145',
+'HOST': '47.103.127.226',
+'PORT': '3306',
     }
 }
 

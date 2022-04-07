@@ -1,7 +1,7 @@
 import sqlite3
 import hashlib
 
-conn = sqlite3.connect('../db.sqlite3')
+conn = sqlite3.connect('../../db.sqlite3')
 conn.execute('pragma foreign_keys=on')
 print("数据库打开成功")
 c = conn.cursor()
