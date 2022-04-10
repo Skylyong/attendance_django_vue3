@@ -123,14 +123,20 @@
 	
   + 项目部署
 	   + [推荐]Vue项目打包到django部署 https://blog.csdn.net/qq_42517220/article/details/105725506
-	     + Vue项目打包到django部署 https://blog.csdn.net/lymmurrain/article/details/109348390
+	   + Vue项目打包到django部署 https://blog.csdn.net/lymmurrain/article/details/109348390
 	   + Docker部署Django https://pythondjango.cn/django/advanced/16-docker-deployment/
 	   + Nginx启动无法访问： https://blog.csdn.net/yujing1314/article/details/105225325
 	
-       + [从阿里云服务器购买到项目部署，可部分参考]Django搭建个人博客：将项目部署到服务器 https://www.dusaiphoto.com/article/71/
-	     + [通俗易懂强烈推荐] 部署Django(也是优秀的Django教程) https://www.liujiangblog.com/course/django/181
+     + [从阿里云服务器购买到项目部署，可部分参考]Django搭建个人博客：将项目部署到服务器 https://www.dusaiphoto.com/article/71/
+	   + [通俗易懂强烈推荐] 部署Django(也是优秀的Django教程) https://www.liujiangblog.com/course/django/181
   
   + 数据库更改
   
      +  SQLite 到 MySQL 的数据库导入流程 https://segmentfault.com/a/1190000023917962
      +  使用MySQL数据库 https://www.liujiangblog.com/course/django/165
+     +  MySQL密码用户正确但报1045错误 https://www.cnblogs.com/bjx2020/p/12118614.html
+     +  Centos7 防火墙管理 https://zhuanlan.zhihu.com/p/55069428
+
+	 + 后期运维
+	
+	   + Django日志  https://www.liujiangblog.com/course/django/176

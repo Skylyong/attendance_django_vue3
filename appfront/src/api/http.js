@@ -13,7 +13,7 @@ if (process.env.NODE_ENV == 'development') {
 } else if (process.env.NODE_ENV == 'debug') {
     axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
 } else if (process.env.NODE_ENV == 'production') {
-    axios.defaults.baseURL = 'http://47.103.127.226:80/api';
+    axios.defaults.baseURL = 'http://172.16.101.91:80/api';
 }
 
 // 请求超时时间
@@ -33,8 +33,8 @@ axios.get('/login/')
         var CSRFToken = document.cookie.match(regex) === null ? null : document.cookie.match(regex)[1]
         //   console.log(response)
         //   console.log(CSRFToken)
-        axios.defaults.headers['X-CSRFToken'] = CSRFToken//getCsfrKey()
-        store.state.token = CSRFToken
+        axios.defaults.headers['X-CSRFToken'] =  response['data']['data']['token'] //CSRFToken
+        store.state.token =  response['data']['data']['token'] //CSRFToken
         store.state.pubkey = response['data']['data']['pubkey']
         console.log('store.state.token:', store.state.token)
         console.log('response:', response['data'])

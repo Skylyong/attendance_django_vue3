@@ -204,8 +204,9 @@ def login(request):
         with open('rsa_public_key.pem') as f:
             public_key = f.read()
             # public_key = data.decode('utf-8')
-        response = get_response(data={'pubkey': public_key})
-        get_token(request)
+
+        token = get_token(request)
+        response = set_response(1, 'test_message', data={'pubkey': public_key, 'token':token})
         return JsonResponse(response)
 
     if request.method == 'POST':

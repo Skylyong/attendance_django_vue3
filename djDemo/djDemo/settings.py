@@ -31,9 +31,9 @@ SECRET_KEY = 'django-insecure-eulthvb71+d+=88ih3lrj)w$i6d#nqhdvncoxo474!*mtyl2*^
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['47.103.127.226','127.0.0.1']
+ALLOWED_HOSTS = ['47.103.127.226','127.0.0.1','172.16.101.91']
 
 
 # Application definition
@@ -91,8 +91,8 @@ DATABASES = {
 'ENGINE': 'django.db.backends.mysql',
 'NAME': 'attendance',
 'USER': 'root',
-'PASSWORD': '789632145',
-'HOST': '47.103.127.226',
+'PASSWORD': 'Wvm25693457425@@##s#df%sdf&212.a',
+'HOST': '172.16.101.91',
 'PORT': '3306',
     }
 }
