@@ -10,23 +10,21 @@
       class="center"
       name="nest-messages"
       :validate-messages="validateMessages"
-      @finish="onFinish"
     >
       <br />
       <br />
-      <h1>修改密码</h1>
+      <h1>更改密码</h1>
       <br />
       <br />
-      <a-form-item label="选择账号">
-        <a-select
-          ref="select"
-          v-model:value="formState.userId"
-          style="width: 225px"
-          :options="options_apply_type.data"
-        >
-        </a-select>
-      </a-form-item>
 
+           <a-form-item label="原始密码">
+        <a-input-password v-model:value="formState.key0">
+          <template #prefix>
+            <LockOutlined class="site-form-item-icon" />
+          </template>
+        </a-input-password>
+      </a-form-item>
+     
       <a-form-item label="输入密码">
         <a-input-password v-model:value="formState.key1">
           <template #prefix>
@@ -44,7 +42,7 @@
       </a-form-item>
 
       <a-button type="primary" html-type="Submit" @click="handleOk"
-        >重置</a-button
+        >确定</a-button
       >
     </a-form>
   </div>
@@ -55,7 +53,7 @@ import dayjs from "dayjs";
 import { message } from "ant-design-vue";
 import { defineComponent, ref, reactive } from "vue";
 import moment from "moment";
-import { resetPwd, getWorkerId } from "../../api/api.js";
+import { resetPwdWork } from "../../api/api.js";
 import md5 from "js-md5";
 import { JSEncrypt } from "jsencrypt";
 import { useStore } from "vuex";
@@ -66,9 +64,9 @@ export default defineComponent({
   setup() {
     const store = useStore();
     const formState = reactive({
+        key0: "",
       key1: "",
       key2: "",
-      userId: "",
     });
 
     function getCode(password) {
@@ -79,27 +77,21 @@ export default defineComponent({
       return data;
     }
 
-    let options_apply_type = ref({'data': ''});
     let userid = localStorage.getItem("Userid");
-    getWorkerId(userid).then((response) => {
-      if (response["code"] == 1) {
-        // console.log(response["data"]);
-        options_apply_type.value = {'data':response["data"]};
-        // console.log(options_apply_type);
-      } else {
-        message.error("获取员工工号失败");
-      }
-    });
+
 
     const handleOk = () => {
-      if (formState.key1 == formState.key2) {
+    console.log('formState.key0',formState.key0)
+      if (formState.key1 == formState.key2 &&  formState.key1 != '' && formState.key2 !='') {
         formState.key1 = md5(formState.key1);
         formState.key1 = getCode(formState.key1);
         formState.key2 = md5(formState.key2);
         formState.key2 = getCode(formState.key2);
+        formState.key0 = md5(formState.key0);
+        formState.key0 = getCode(formState.key0);
+        
 
-        console.log(formState.userId)
-        resetPwd(formState.key1, formState.userId).then(
+        resetPwdWork(formState.key1, userid, formState.key0).then(
           (response) => {
             if (response["code"] == 1) {
               message.success("重置密码成功");
@@ -116,10 +108,8 @@ export default defineComponent({
       }
     };
     return {
-      getWorkerId,
       handleOk,
       formState,
-      options_apply_type,
     };
   },
 });

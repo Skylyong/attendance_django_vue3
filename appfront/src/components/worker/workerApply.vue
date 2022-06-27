@@ -372,7 +372,7 @@ const dataJson = {};
     const disabledRangeTime = () => {
       {
         return {
-          disabledHours: () => range(8, 18, "hour"),
+           disabledHours: () => range(0, 24, "hour"),
           disabledMinutes: () => range(15, 60, "minute"),
           disabledSeconds: () => [55, 56],
         };
