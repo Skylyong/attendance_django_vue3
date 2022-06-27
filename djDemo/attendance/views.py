@@ -206,7 +206,7 @@ def login(request):
             # public_key = data.decode('utf-8')
 
         token = get_token(request)
-        response = set_response(1, 'test_message', data={'pubkey': public_key, 'token':token})
+        response = set_response(1, 'message', data={'pubkey': public_key, 'token':token})
         return JsonResponse(response)
 
     if request.method == 'POST':
